@@ -156,6 +156,7 @@ Packages are installed in order of importance, with different failure handling:
   5. AUR / apps         Requires yay (skipped if yay fails)
      ├── qalculate-gtk + imv + lazygit
      ├── localsend-bin (prebuilt AUR; provides `localsend`)
+     ├── cliamp-bin (prebuilt AUR; provides `cliamp`, Music Player)
      └── extras that are AUR-only
 ```
 
@@ -178,6 +179,7 @@ Packages are installed in order of importance, with different failure handling:
 | `Super + Shift + D` | Docker manager |
 | `Super + Shift + F` | File manager |
 | `Super + Shift + H` | Quickstart guide |
+| `Super + Shift + K` | Show keybindings |
 | `Super + Shift + O` | Obsidian notes |
 | `Super + Ctrl + A` | Audio controls |
 | `Super + Ctrl + B` | Bluetooth controls |

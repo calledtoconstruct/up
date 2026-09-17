@@ -9,8 +9,9 @@ export UP_ROOT="${UP_ROOT:-/usr/local/share/up}"
 # Force file-only theme/compositor helpers during early session setup
 export UP_DESKTOP_INLINE=1
 
-# LightDM already showed the sharp wallpaper. Fade the pre-rendered
-# blur/dim curtain in while we sync config (before i3 grabs keys).
+# LightDM already showed the login wallpaper. Blur that image while we
+# sync config (before i3 grabs keys). reveal() later crossfades to the
+# session wallpaper at blur, then unblurs.
 if [ -x "$UP_ROOT/configs/scripts/session-curtain.sh" ]; then
     _curtain_dir="${XDG_STATE_HOME:-$HOME/.local/state}/up/session-curtain"
     mkdir -p "$_curtain_dir"

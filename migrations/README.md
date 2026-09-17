@@ -2,8 +2,8 @@
 
 `up-update` runs every `migrations/*.sh` that does not yet have a matching
 `/var/lib/up/migrations/<name>.done` marker. New installs get the current
-tree from `setup.sh`; this directory is empty until a shipped release needs
-a one-shot upgrade.
+tree from `setup.sh`. Migrations still run there; they must be no-ops when
+the tree is already current.
 
 ## Adding one
 

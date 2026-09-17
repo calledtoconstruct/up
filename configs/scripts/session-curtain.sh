@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# Session curtain — pre-rendered wallpaper fade (blur + dim) around login.
+# Session curtain — pre-rendered wallpaper fade around login.
 #
-# LightDM already shows the sharp wallpaper. After login we play frames that
-# were generated when the theme/background last changed, then play them in
-# reverse once i3 has loaded keybindings.
+# LightDM shows the login wallpaper. After login we blur that image, crossfade
+# at full blur onto the session wallpaper, then unblur to the sharp desktop.
+#
+# Sequence: login sharp → login blur → session blur → session sharp
 #
 # Usage:
 #   session-curtain.sh prepare [IMAGE]
@@ -11,21 +12,26 @@
 #   session-curtain.sh fade-out
 #   session-curtain.sh reveal
 #   session-curtain.sh play-sound
+#   session-curtain.sh playback-list
 
 set -euo pipefail
 
 export UP_ROOT="${UP_ROOT:-/usr/local/share/up}"
 
 FRAME_COUNT="${UP_CURTAIN_FRAMES:-10}"
+BLEND_COUNT="${UP_CURTAIN_BLEND_FRAMES:-8}"
 FRAME_DELAY="${UP_CURTAIN_DELAY:-0.032}"
 CACHE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/up/session-curtain"
 LOCK="$CACHE_DIR/active"
 FADE_PIDFILE="$CACHE_DIR/fade-in.pid"
 SOURCE_FILE="$CACHE_DIR/source"
+LOGIN_SOURCE_FILE="$CACHE_DIR/login-source"
 HASH_FILE="$CACHE_DIR/source.sha256"
 SOUND="${UP_ROOT}/configs/sounds/desktop-ready.wav"
 CONFIG_FILE="${HOME}/.config/up/config"
 BG_STATE_FILE="${HOME}/.config/up-background"
+GREETER_BG_FILE="/usr/share/backgrounds/up/current.jpg"
+GREETER_CONF="/etc/lightdm/lightdm-gtk-greeter.conf"
 
 have_cmd() { command -v "$1" >/dev/null 2>&1; }
 
@@ -39,14 +45,22 @@ read_config_key() {
         || echo ""
 }
 
-frame_path() {
-    printf '%s/frame-%02d.jpg\n' "$CACHE_DIR" "$1"
+seq_dir() {
+    printf '%s/%s\n' "$CACHE_DIR" "$1"
 }
 
-resolve_source() {
+frame_path() {
+    printf '%s/%s/frame-%02d.jpg\n' "$CACHE_DIR" "$1" "$2"
+}
+
+resolve_session() {
     local src="${1:-}"
     if [ -n "$src" ] && [ -f "$src" ]; then
         printf '%s\n' "$src"
+        return 0
+    fi
+    if [ -n "${UP_CURTAIN_SESSION:-}" ] && [ -f "${UP_CURTAIN_SESSION}" ]; then
+        printf '%s\n' "$UP_CURTAIN_SESSION"
         return 0
     fi
     if [ -f "$BG_STATE_FILE" ]; then
@@ -59,6 +73,33 @@ resolve_source() {
     return 1
 }
 
+greeter_conf_background() {
+    local conf="${1:-$GREETER_CONF}"
+    [ -f "$conf" ] || return 1
+    grep -E '^[[:space:]]*background[[:space:]]*=' "$conf" 2>/dev/null \
+        | tail -1 \
+        | sed 's/^[^=]*=[[:space:]]*//' \
+        | tr -d ' "'"'"'"'
+}
+
+resolve_login() {
+    local src="${UP_CURTAIN_LOGIN:-}"
+    if [ -n "$src" ] && [ -f "$src" ]; then
+        printf '%s\n' "$src"
+        return 0
+    fi
+    if [ -f "$GREETER_BG_FILE" ]; then
+        printf '%s\n' "$GREETER_BG_FILE"
+        return 0
+    fi
+    src=$(greeter_conf_background "$GREETER_CONF" || true)
+    if [ -n "$src" ] && [ -f "$src" ]; then
+        printf '%s\n' "$src"
+        return 0
+    fi
+    resolve_session "${1:-}"
+}
+
 source_hash() {
     local src="$1"
     if have_cmd sha256sum; then
@@ -68,52 +109,46 @@ source_hash() {
     fi
 }
 
-frames_ready() {
+frames_ready_in() {
+    local name="$1" count="$2"
     local i
-    for i in $(seq 1 "$FRAME_COUNT"); do
-        [ -f "$(frame_path "$i")" ] || return 1
+    for i in $(seq 1 "$count"); do
+        [ -f "$(frame_path "$name" "$i")" ] || return 1
     done
     return 0
 }
 
-# Build fade frames with ffmpeg (already a system package). Ease-in so the
-# first frames stay close to the LightDM wallpaper, then blur/dim accumulate.
-prepare() {
-    local src
-    src=$(resolve_source "${1:-}") || return 0
+frames_ready() {
+    frames_ready_in login "$FRAME_COUNT" || return 1
+    frames_ready_in session "$FRAME_COUNT" || return 1
+}
 
-    mkdir -p "$CACHE_DIR"
-    local new_hash
-    new_hash=$(source_hash "$src")
-    if frames_ready && [ -f "$HASH_FILE" ] && [ "$(tr -d '[:space:]' <"$HASH_FILE")" = "$new_hash" ]; then
-        printf '%s\n' "$src" >"$SOURCE_FILE"
-        return 0
-    fi
+cover_scale() {
+    local src="$1" dest="$2"
+    ffmpeg -hide_banner -loglevel error -y -i "$src" \
+        -vf "scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080" \
+        -q:v 3 "$dest"
+}
 
-    if ! have_cmd ffmpeg; then
-        return 0
-    fi
-
-    local tmp base
+# Ease-in blur/dim so early frames stay close to the source wallpaper.
+render_blur_sequence() {
+    local src="$1" name="$2"
+    local tmp base i t ease sigma bright sat vf out dir
+    dir=$(seq_dir "$name")
+    mkdir -p "$dir"
     tmp=$(mktemp -d "${TMPDIR:-/tmp}/up-curtain.XXXXXX")
     base="$tmp/base.jpg"
-    # Cover-scale once; playback is just swapping root pixmaps.
-    if ! ffmpeg -hide_banner -loglevel error -y -i "$src" \
-        -vf "scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080" \
-        -q:v 3 "$base" 2>/dev/null; then
+    if ! cover_scale "$src" "$base" 2>/dev/null; then
         rm -rf "$tmp"
-        return 0
+        return 1
     fi
-
-    local i t ease sigma bright sat vf out
     for i in $(seq 1 "$FRAME_COUNT"); do
-        # t in [0, 1]; ease-in (t^2) keeps early frames crisp
         t=$(awk -v i="$i" -v n="$FRAME_COUNT" 'BEGIN{printf "%.4f", (i-1)/(n-1)}')
         ease=$(awk -v t="$t" 'BEGIN{printf "%.4f", t*t}')
         sigma=$(awk -v e="$ease" 'BEGIN{printf "%.2f", e*16}')
         bright=$(awk -v e="$ease" 'BEGIN{printf "%.3f", -0.22*e}')
         sat=$(awk -v e="$ease" 'BEGIN{printf "%.3f", 1-(0.55*e)}')
-        out=$(frame_path "$i")
+        out=$(frame_path "$name" "$i")
         if awk -v s="$sigma" 'BEGIN{exit !(s < 0.2)}'; then
             vf="format=yuv420p"
         else
@@ -123,9 +158,72 @@ prepare() {
             && mv -f "$tmp/f.jpg" "$out"
     done
     rm -rf "$tmp"
+    frames_ready_in "$name" "$FRAME_COUNT"
+}
+
+render_blend_sequence() {
+    local a="$1" b="$2"
+    local tmp i t out dir
+    dir=$(seq_dir blend)
+    mkdir -p "$dir"
+    [ -f "$a" ] && [ -f "$b" ] || return 1
+    tmp=$(mktemp -d "${TMPDIR:-/tmp}/up-curtain-blend.XXXXXX")
+    for i in $(seq 1 "$BLEND_COUNT"); do
+        t=$(awk -v i="$i" -v n="$BLEND_COUNT" 'BEGIN{printf "%.4f", (i-1)/(n-1)}')
+        out=$(frame_path blend "$i")
+        ffmpeg -hide_banner -loglevel error -y -i "$a" -i "$b" \
+            -filter_complex "blend=all_expr='A*(1-${t})+B*${t}'" \
+            -q:v 4 "$tmp/f.jpg" 2>/dev/null \
+            && mv -f "$tmp/f.jpg" "$out"
+    done
+    rm -rf "$tmp"
+    frames_ready_in blend "$BLEND_COUNT"
+}
+
+prepare() {
+    local session_src login_src
+    session_src=$(resolve_session "${1:-}") || session_src=""
+    login_src=$(resolve_login "$session_src") || login_src=""
+    if [ -z "$session_src" ] && [ -n "$login_src" ]; then
+        session_src="$login_src"
+    fi
+    if [ -z "$login_src" ] && [ -n "$session_src" ]; then
+        login_src="$session_src"
+    fi
+    [ -n "$session_src" ] && [ -f "$session_src" ] || return 0
+    [ -n "$login_src" ] && [ -f "$login_src" ] || login_src="$session_src"
+
+    mkdir -p "$CACHE_DIR"
+    local new_hash login_hash session_hash
+    login_hash=$(source_hash "$login_src")
+    session_hash=$(source_hash "$session_src")
+    new_hash="${login_hash} ${session_hash}"
+    if frames_ready && [ -f "$HASH_FILE" ] && [ "$(tr -d '\n' <"$HASH_FILE")" = "$new_hash" ]; then
+        printf '%s\n' "$session_src" >"$SOURCE_FILE"
+        printf '%s\n' "$login_src" >"$LOGIN_SOURCE_FILE"
+        return 0
+    fi
+
+    if ! have_cmd ffmpeg; then
+        return 0
+    fi
+
+    rm -rf "$(seq_dir login)" "$(seq_dir session)" "$(seq_dir blend)"
+    # Drop the old single-sequence layout (frame-01.jpg at cache root).
+    rm -f "$CACHE_DIR"/frame-*.jpg
+
+    render_blur_sequence "$login_src" login || return 0
+    if [ "$login_hash" = "$session_hash" ]; then
+        cp -a "$(seq_dir login)" "$(seq_dir session)"
+        rm -rf "$(seq_dir blend)"
+    else
+        render_blur_sequence "$session_src" session || return 0
+        render_blend_sequence "$(frame_path login "$FRAME_COUNT")" "$(frame_path session "$FRAME_COUNT")" || true
+    fi
 
     if frames_ready; then
-        printf '%s\n' "$src" >"$SOURCE_FILE"
+        printf '%s\n' "$session_src" >"$SOURCE_FILE"
+        printf '%s\n' "$login_src" >"$LOGIN_SOURCE_FILE"
         printf '%s\n' "$new_hash" >"$HASH_FILE"
     fi
 }
@@ -138,23 +236,49 @@ set_root_image() {
     feh --bg-fill --no-fehbg "$img" 2>/dev/null || true
 }
 
-play_frames() {
-    local dir="$1" # forward | reverse
-    frames_ready || return 0
-    [ -n "${DISPLAY:-}" ] || return 0
-    have_cmd feh || return 0
+playback_list() {
     local i
-    if [ "$dir" = "reverse" ]; then
-        for i in $(seq "$FRAME_COUNT" -1 1); do
-            set_root_image "$(frame_path "$i")"
-            sleep "$FRAME_DELAY"
-        done
-    else
-        for i in $(seq 1 "$FRAME_COUNT"); do
-            set_root_image "$(frame_path "$i")"
-            sleep "$FRAME_DELAY"
+    for i in $(seq 1 "$FRAME_COUNT"); do
+        printf '%s\n' "$(frame_path login "$i")"
+    done
+    if frames_ready_in blend "$BLEND_COUNT"; then
+        for i in $(seq 1 "$BLEND_COUNT"); do
+            printf '%s\n' "$(frame_path blend "$i")"
         done
     fi
+    for i in $(seq "$FRAME_COUNT" -1 1); do
+        printf '%s\n' "$(frame_path session "$i")"
+    done
+}
+
+play_paths() {
+    local img
+    [ -n "${DISPLAY:-}" ] || return 0
+    have_cmd feh || return 0
+    while IFS= read -r img; do
+        [ -n "$img" ] || continue
+        set_root_image "$img"
+        sleep "$FRAME_DELAY"
+    done
+}
+
+fade_in_list() {
+    local i
+    for i in $(seq 1 "$FRAME_COUNT"); do
+        printf '%s\n' "$(frame_path login "$i")"
+    done
+}
+
+reveal_list() {
+    local i
+    if frames_ready_in blend "$BLEND_COUNT"; then
+        for i in $(seq 1 "$BLEND_COUNT"); do
+            printf '%s\n' "$(frame_path blend "$i")"
+        done
+    fi
+    for i in $(seq "$FRAME_COUNT" -1 1); do
+        printf '%s\n' "$(frame_path session "$i")"
+    done
 }
 
 fade_in() {
@@ -162,12 +286,12 @@ fade_in() {
     echo $$ >"$FADE_PIDFILE"
     touch "$LOCK"
     prepare "" || true
-    play_frames forward
+    fade_in_list | play_paths
     rm -f "$FADE_PIDFILE"
 }
 
 fade_out() {
-    play_frames reverse
+    reveal_list | play_paths
 }
 
 restore_wallpaper() {
@@ -176,7 +300,7 @@ restore_wallpaper() {
         src=$(tr -d '\n' <"$SOURCE_FILE")
     fi
     if [ -z "$src" ] || [ ! -f "$src" ]; then
-        src=$(resolve_source "") || src=""
+        src=$(resolve_session "") || src=""
     fi
     if [ -n "$src" ] && [ -f "$src" ]; then
         set_root_image "$src"
@@ -212,8 +336,6 @@ wait_for_ready() {
             sleep 0.05
         done
     fi
-    # Keybindings are part of i3's parsed config; the generated file is the
-    # source of those bindsyms.
     for i in $(seq 1 20); do
         [ -s "$HOME/.config/i3/keybindings.conf" ] && break
         sleep 0.05
@@ -224,7 +346,6 @@ wait_for_ready() {
             sleep 0.05
         done
     fi
-    # Let a still-running fade-in finish so we do not reverse mid-blur
     if [ -f "$FADE_PIDFILE" ]; then
         local pid
         pid=$(tr -d '[:space:]' <"$FADE_PIDFILE" 2>/dev/null || true)
@@ -259,8 +380,9 @@ case "$cmd" in
     fade-out) fade_out ;;
     reveal) reveal ;;
     play-sound) play_sound ;;
+    playback-list) playback_list ;;
     *)
-        echo "Usage: $0 prepare [IMAGE] | fade-in | fade-out | reveal | play-sound" >&2
+        echo "Usage: $0 prepare [IMAGE] | fade-in | fade-out | reveal | play-sound | playback-list" >&2
         exit 2
         ;;
 esac

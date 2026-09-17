@@ -157,6 +157,7 @@ browser = "firefox"
 # Additional Functions
 # ============================================================================
 [additional]
+"Super+Shift+K" = { desc = "Show keybindings", command = "/usr/local/bin/up-show-keybindings" }
 "Super+Control+Mod1+R" = { desc = "Reload i3", command = "reload" }
 "Super+Control+Shift+C" = { desc = "Color picker", command = "/usr/local/bin/up-color-picker" }
 "Control+Mod1+Delete" = { desc = "Exit i3", command = "i3-nagbar -t warning -m 'Do you really want to exit?' -B 'Yes' 'i3-msg exit'" }

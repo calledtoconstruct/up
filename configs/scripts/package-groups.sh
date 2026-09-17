@@ -55,7 +55,7 @@ SYSTEM_PACKAGES="
     ffmpeg \
     ufw \
     gpick \
-    lazygit cliamp qalculate-gtk
+    lazygit qalculate-gtk
     "
 
 # Shell enhancement tools - modern replacements for standard commands
@@ -86,6 +86,7 @@ AUR_PACKAGES="
 # requires fvm/flutter/rustup and routinely fails during setup.
 APPLICATION_PACKAGES="
     localsend-bin
+    cliamp-bin
 "
 
 # =============================================================================

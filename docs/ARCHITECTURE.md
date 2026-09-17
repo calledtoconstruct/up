@@ -211,7 +211,7 @@ Shared scripts (`switch-theme`, `apply-compositor-profile`, `config-sync`) run i
 | `up-update` / migrations / `up-add-user` | `--home` + `--no-reload` + `UP_DESKTOP_INLINE=1` — per-user files only |
 | `start-session.sh` (pre-i3) | `UP_DESKTOP_INLINE=1` for config-sync; session curtain fade-in; then i3 starts `desktop-agent` |
 
-**Session curtain:** theme/background apply pre-renders ~10 JPEG frames (ffmpeg `gblur` + dim) under `~/.local/state/up/session-curtain/`. Login fades those frames in, then `session-curtain.sh reveal` fades them out once i3 IPC and `keybindings.conf` are present. Optional `ready_sound` (Kenney CC0) is off by default.
+**Session curtain:** theme/background apply pre-renders JPEG frames (ffmpeg `gblur` + dim) under `~/.local/state/up/session-curtain/{login,blend,session}/`. Login plays the greeter image sharp → blurred. Once i3 IPC and `keybindings.conf` are present, `session-curtain.sh reveal` crossfades at blur onto the session wallpaper and unblurs. Optional `ready_sound` (Kenney CC0) is off by default.
 | Graphical session | Theme/font tools enqueue work; agent reloads i3/polybar/picom |
 
 `switch-theme` refuses the desktop queue when: no DISPLAY, chroot, `UP_INSTALL`, `UP_DESKTOP_INLINE`, `--home` override, or missing agent scripts.
@@ -263,9 +263,9 @@ Smart fallback hierarchy:
 ## Migrations
 
 `up-update` runs `migrations/*.sh` once each (marker files under
-`/var/lib/up/migrations/`). New installs already match the current tree, so
-this directory stays empty until a shipped release needs a one-shot upgrade.
-See `migrations/README.md`.
+`/var/lib/up/migrations/`). New installs already match the current tree except
+where a migration also repairs older systems (for example `001-install-cliamp`
+is a no-op once `cliamp` is present). See `migrations/README.md`.
 
 ### Update Process
 
