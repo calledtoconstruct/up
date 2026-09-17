@@ -1,14 +1,14 @@
 # Up Linux Dependencies
 
-Last reviewed: **2026-08-12**. Re-verify XLibre and AUR packages at least quarterly.
+Last reviewed: **2026-09-16**. Re-verify XLibre and AUR packages at least quarterly.
 
 ## Critical external: XLibre
 
 | Item | Detail |
 |------|--------|
 | Packages | `xlibre-xserver`, `xlibre-input-libinput` (essential when XLibre path succeeds) |
-| Repo | `[xlibre]` → `https://x11libre.net/repo/arch_based/x86_64` |
-| Key | `73580DE2EDDFA6D6` |
+| Repo | `[xlibre-stable]` → `https://packages.xlibre.net/arch/stable/$arch` |
+| Key | `B97F7C613F359424` (ASC: `configs/keys/xlibre-archlinux.asc`) |
 | Fallback | Stock `xorg-server` + `xf86-input-libinput` if repo/key fails after retries |
 | Risk | Not in official Arch repos; packaging/docs have been contentious in the Arch community; AUR install order is fragile; may conflict with NVIDIA ABI assumptions |
 | Install behavior | Retry key/repo (with TUI prompt); then fallback rather than hard-brick |

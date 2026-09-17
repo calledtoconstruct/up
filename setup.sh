@@ -86,28 +86,51 @@ update_progress 15 "$PROGRESS_TOTAL" "Adding XLibre repository..."
 
 # Display stack selection: prefer XLibre; fall back to stock xorg-server on failure
 DISPLAY_STACK="xlibre"
+# Old x11libre.net mirror + key were retired 2026-08-12.
+# Current: https://xlibre-arch.github.io/  key B97F7C613F359424
+XLIBRE_KEY_ID="B97F7C613F359424"
+XLIBRE_KEY_URL="https://xlibre-arch.github.io/xlibre-archlinux.asc"
+XLIBRE_KEY_FILE="$UP_ROOT/configs/keys/xlibre-archlinux.asc"
+
 setup_xlibre_repo() {
   run_and_log pacman-key --init || return 1
   run_and_log pacman-key --populate archlinux || return 1
-  if ! run_and_log pacman-key --recv-keys 73580DE2EDDFA6D6; then
-    return 1
+
+  local keytmp
+  keytmp=$(mktemp)
+  if [ -f "$XLIBRE_KEY_FILE" ]; then
+    cp "$XLIBRE_KEY_FILE" "$keytmp"
+  elif ! curl -fsSL "$XLIBRE_KEY_URL" -o "$keytmp"; then
+    rm -f "$keytmp"
+    # Last resort: keyservers (often blocked on live ISOs)
+    if ! run_and_log pacman-key --keyserver hkps://keyserver.ubuntu.com --recv-keys "$XLIBRE_KEY_ID"; then
+      return 1
+    fi
+    keytmp=""
   fi
-  run_and_log pacman-key --finger 73580DE2EDDFA6D6 || true
-  if ! run_and_log pacman-key --lsign-key 73580DE2EDDFA6D6; then
+  if [ -n "$keytmp" ]; then
+    if ! run_and_log pacman-key --add "$keytmp"; then
+      rm -f "$keytmp"
+      return 1
+    fi
+    rm -f "$keytmp"
+  fi
+  run_and_log pacman-key --finger "$XLIBRE_KEY_ID" || true
+  if ! run_and_log pacman-key --lsign-key "$XLIBRE_KEY_ID"; then
     return 1
   fi
 
-  # Avoid duplicating the repo block on re-runs
-  if ! grep -q '^\[xlibre\]' /etc/pacman.conf 2>/dev/null; then
-    cat <<EOF >>/etc/pacman.conf
+  # Drop retired [xlibre] / stale [xlibre-stable] blocks, then add current.
+  if grep -qE '^\[xlibre(-stable)?\]' /etc/pacman.conf 2>/dev/null; then
+    sed -i '/^\[xlibre\]/,/^Server = /d;/^\[xlibre-stable\]/,/^Server = /d' /etc/pacman.conf 2>/dev/null || true
+  fi
+  cat <<EOF >>/etc/pacman.conf
 
-[xlibre]
-Server = https://x11libre.net/repo/arch_based/x86_64
+[xlibre-stable]
+Server = https://packages.xlibre.net/arch/stable/\$arch
 SigLevel = Required DatabaseOptional
 EOF
-  fi
 
-  # Sync so xlibre packages are visible
   if ! run_and_log pacman -Sy --noconfirm; then
     return 1
   fi
@@ -146,9 +169,8 @@ if [ "$xlibre_ok" = false ]; then
   log_warning "XLibre unavailable — falling back to stock xorg-server"
   DISPLAY_STACK="xorg"
   # Remove xlibre repo block if partially added
-  if grep -q '^\[xlibre\]' /etc/pacman.conf 2>/dev/null; then
-    # shellcheck disable=SC2016
-    sed -i '/^\[xlibre\]/,/^Server = /d' /etc/pacman.conf 2>/dev/null || true
+  if grep -qE '^\[xlibre(-stable)?\]' /etc/pacman.conf 2>/dev/null; then
+    sed -i '/^\[xlibre\]/,/^Server = /d;/^\[xlibre-stable\]/,/^Server = /d' /etc/pacman.conf 2>/dev/null || true
   fi
 fi
 echo "DISPLAY_STACK=$DISPLAY_STACK" > /root/up/.display-stack

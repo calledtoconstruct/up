@@ -358,7 +358,7 @@ up-refresh-config i3/config
 
 ## Display stack (XLibre)
 
-Up prefers **XLibre** (`xlibre-xserver`) from the external `[xlibre]` repository. If key/repo setup fails after retries, the installer **falls back to stock `xorg-server`** so the machine still gets a desktop. The chosen stack is logged in `/var/log/up/install-report.txt` and `/root/up/.display-stack` during install.
+Up prefers **XLibre** (`xlibre-xserver`) from `[xlibre-stable]` (`https://packages.xlibre.net/arch/stable/$arch`). If key/repo setup fails after retries, the installer **falls back to stock `xorg-server`** so the machine still gets a desktop. The chosen stack is logged in `/var/log/up/install-report.txt` and `/root/up/.display-stack` during install.
 
 ## Troubleshooting
 

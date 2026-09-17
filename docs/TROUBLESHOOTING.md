@@ -25,11 +25,13 @@ ls /tmp/up-state/                    # live state during install (ISO host)
 
 - Install prefers XLibre; on repo/key failure it falls back to `xorg-server`.
 - Check: `grep DISPLAY_STACK /var/log/up/install-report.txt` or `/root/up/.display-stack` (pre-reboot on target).
-- Manual XLibre key (if retrying by hand):
+- Manual XLibre key (if retrying by hand). Do **not** `recv-keys 73580DE2EDDFA6D6` — that key and the old x11libre.net mirror were retired 2026-08-12:
   ```bash
-  pacman-key --recv-keys 73580DE2EDDFA6D6
-  pacman-key --lsign-key 73580DE2EDDFA6D6
-  # ensure [xlibre] in /etc/pacman.conf then pacman -Sy
+  curl -fsSL https://xlibre-arch.github.io/xlibre-archlinux.asc -o /tmp/xlibre.asc
+  pacman-key --add /tmp/xlibre.asc
+  pacman-key --lsign-key B97F7C613F359424
+  # [xlibre-stable] Server = https://packages.xlibre.net/arch/stable/$arch
+  pacman -Sy
   ```
 - LightDM login loop: see migrations `002-native-i3-session.sh` and `003-lightdm-fixes.sh`; confirm `/usr/share/xsessions/i3-up.desktop` and `~/.xsession` exist.
 
