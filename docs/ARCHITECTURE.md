@@ -260,33 +260,12 @@ Smart fallback hierarchy:
 2. General backgrounds
 3. Solid color fallback
 
-## Migration System
+## Migrations
 
-### Design Principles
-
-- **Numbered Scripts**: `migrations/*.sh` with sequential numbering
-- **Idempotent**: Each migration runs only once
-- **State Tracking**: `/var/lib/up/migrations/*.done` files
-- **Non-Blocking**: Failed migrations don't stop updates
-
-### Example Migration Structure
-
-```bash
-MIG_NUM="010"
-MIG_NAME="installer-config-fixes"
-STATE_DIR="/var/lib/up/migrations"
-DONE_FILE="$STATE_DIR/${MIG_NUM}.done"
-
-if [ -f "$DONE_FILE" ]; then
-    echo "Migration $MIG_NUM already applied."
-    exit 0
-fi
-
-# Migration logic here...
-
-# Mark as done
-touch "$DONE_FILE"
-```
+`up-update` runs `migrations/*.sh` once each (marker files under
+`/var/lib/up/migrations/`). New installs already match the current tree, so
+this directory stays empty until a shipped release needs a one-shot upgrade.
+See `migrations/README.md`.
 
 ### Update Process
 
@@ -299,7 +278,7 @@ Pipeline (Omarchy-inspired, X11-adapted):
 3. Migrations with skip-and-continue option
 4. `pacman -Syu` (failures reported, not swallowed)
 5. Optional AUR update if yay present
-6. Diff-aware config refresh + keybindings regenerate if missing
+6. Diff-aware config refresh + regenerate i3 keybindings
 7. Re-apply current theme
 
 Single-file helper: `up-refresh-config <relative-path>`.

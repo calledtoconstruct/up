@@ -381,6 +381,15 @@ if [ -x "$UP_ROOT/configs/scripts/install-agent-skills.sh" ]; then
     --home "/home/$USERNAME" || true
 fi
 
+if [ -f "$UP_ROOT/configs/systemd/user/up-crash-watch.service" ]; then
+  unit_dir="/home/$USERNAME/.config/systemd/user"
+  mkdir -p "$unit_dir/default.target.wants"
+  install -m 644 "$UP_ROOT/configs/systemd/user/up-crash-watch.service" \
+    "$unit_dir/up-crash-watch.service"
+  ln -sfn "$unit_dir/up-crash-watch.service" \
+    "$unit_dir/default.target.wants/up-crash-watch.service"
+fi
+
 # Seed config before detection so effects=auto is present
 cat > "/home/$USERNAME/.config/up/config" << 'EOF'
 # effects: auto | full | lite | safe

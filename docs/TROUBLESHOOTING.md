@@ -33,7 +33,7 @@ ls /tmp/up-state/                    # live state during install (ISO host)
   # [xlibre-stable] Server = https://packages.xlibre.net/arch/stable/$arch
   pacman -Sy
   ```
-- LightDM login loop: see migrations `002-native-i3-session.sh` and `003-lightdm-fixes.sh`; confirm `/usr/share/xsessions/i3-up.desktop` and `~/.xsession` exist.
+- LightDM login loop: confirm `/usr/share/xsessions/i3-up.desktop` exists and the greeter session is `i3-up`.
 
 ### GRUB / unbootable system
 
@@ -323,10 +323,8 @@ Avoid bare `pacman -Syu` without migrations — config fixes may be skipped.
 # 1) Call by absolute path (always works)
 sudo /usr/local/share/up/bin/up-update
 
-# 2) Install secure_path links (done by migration 005 / up-update itself)
+# 2) Install secure_path links (up-update does this)
 sudo ln -sfn /usr/local/share/up/bin/up-update /usr/local/bin/up-update
-# or all tools:
-sudo bash /usr/local/share/up/migrations/005-up-bin-secure-path.sh
 
 # 3) After links or a new up-update is in place, plain works:
 up-update

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Boot and runtime tunables that do not drop features.
-# Safe to run from setup.sh (chroot) and from migrations on existing installs.
+# Safe to run from setup.sh (chroot) and from up-update if invoked by a future migration.
 #
 #   - GRUB menu timeout 2s (menu still interruptible)
 #   - Do not block graphical.target on a live network
