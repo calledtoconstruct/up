@@ -32,7 +32,7 @@ Cleanup uses the same library (`cleanup_partitions`) and must never `source boot
 
 ### Display stack
 
-Preferred: XLibre from external repo. On failure after retries: fallback to `xorg-server` + `xf86-input-libinput`. Recorded as `DISPLAY_STACK` in install report.
+Preferred: XLibre from `[xlibre-stable]` (`https://packages.xlibre.net/arch/stable/$arch`, key `B97F7C613F359424`). On failure after retries: `xorg-server` + `xf86-input-libinput`. Recorded as `DISPLAY_STACK` in the install report.
 
 ### Progress protocol
 

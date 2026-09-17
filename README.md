@@ -39,17 +39,11 @@ sudo up-update
 
 ## Documentation
 
-📖 **[Installation Guide](docs/INSTALL.md)** — Step-by-step installation and setup for users
-
-🏗️ **[Architecture](docs/ARCHITECTURE.md)** — Technical implementation details for developers
-
-🤖 **[Development](docs/DEVELOPMENT.md)** — Guidelines for contributors and AI assistants
-
-🔧 **[Troubleshooting](docs/TROUBLESHOOTING.md)** — Install and runtime failure recovery
-
-📦 **[Dependencies](docs/DEPENDENCIES.md)** — External repos (XLibre), AUR helper, risk notes
-
-🧪 **[VM Testing](docs/VM-TESTING.md)** — Test Up install/desktop in a VM from Omarchy (or Arch)
+- [Installation](docs/INSTALL.md)
+- [Troubleshooting](docs/TROUBLESHOOTING.md)
+- [Architecture](docs/ARCHITECTURE.md) — how the installer and desktop are put together
+- [AGENTS.md](AGENTS.md) — working in this git tree
+- [VM tests](tests/vm/README.md)
 
 ## Quick Start
 
@@ -97,20 +91,15 @@ up/
 │   ├── scripts/         # Utility scripts
 │   ├── themes/          # Theme definitions (TOML)
 │   └── [app]/           # Application-specific configs
-├── docs/                # Documentation
-│   ├── INSTALL.md
-│   ├── ARCHITECTURE.md
-│   ├── DEVELOPMENT.md
-│   ├── TROUBLESHOOTING.md
-│   └── DEPENDENCIES.md
+├── docs/                # INSTALL, TROUBLESHOOTING, ARCHITECTURE
 ├── migrations/          # Update migration scripts
 └── bin/                 # up-* executables (up-update, up-refresh-config, ...)
 ```
 
 ## Contributing
 
-Up Linux welcomes contributions! See [Development Guidelines](docs/DEVELOPMENT.md) for coding standards and processes.
+See [AGENTS.md](AGENTS.md) for layout, `UP_ROOT`, and how to run tests. Do not run `install.sh` on the machine you use to edit this repo.
 
 ## License
 
-MIT License — Use freely, modify as needed.
+MIT.

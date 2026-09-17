@@ -6,7 +6,7 @@ Installed desktops have a different skill: `default/agents/skills/up/`. That ski
 
 ## Development host vs target
 
-Do not run `bootstrap.sh`, `install.sh`, or `install-unattended.sh` on the machine you use to edit this repo. Those scripts install and partition. Use a VM (see `docs/VM-TESTING.md`) or a dedicated Up box.
+Do not run `bootstrap.sh`, `install.sh`, or `install-unattended.sh` on the machine you use to edit this repo. Those scripts install and partition. Use a VM (`tests/vm/README.md`) or a dedicated Up box.
 
 ## Layout
 
@@ -14,7 +14,8 @@ Do not run `bootstrap.sh`, `install.sh`, or `install-unattended.sh` on the machi
 - `configs/` — vendor configs and scripts (`UP_ROOT` at runtime)
 - `migrations/` — numbered, idempotent; run by `up-update`
 - `default/agents/skills/` — end-user skills, symlinked into harness dirs on install
-- `docs/` — architecture, install, development
+- `docs/` — INSTALL, TROUBLESHOOTING, ARCHITECTURE
+- `tests/vm/` — QEMU installer and desktop suites
 
 ## Conventions
 

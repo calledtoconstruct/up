@@ -1,32 +1,17 @@
-# Up Linux Installation Guide
+# Installation
 
-**From Arch ISO → fully working X11 + i3 + themed desktop in ~15 minutes on 2010+ hardware.**
+Boot an official Arch ISO, clone this repo, run `./install.sh`. About 15 minutes later you have X11 + i3 + a themed desktop.
 
-## Design Philosophy
+## Hardware
 
-### Opinionated, Robust, and Legacy-Friendly
+Up targets **2010 and newer** machines. X11 only (no Wayland). No SSE4.2 requirement.
 
-Up is an **opinionated Arch Linux distribution** designed with a **robustness-first philosophy** for older hardware:
+- **CPU:** Core 2 Duo and newer
+- **GPU:** Intel HD, older NVIDIA/AMD with X11
+- **RAM:** 2 GB minimum, 4 GB comfortable
+- **Disk:** 20 GB+
 
-- **Essential vs Optional**: Packages are categorized by importance. Essential packages (kernel, display server, window manager) must succeed. Optional packages (themes, extra tools) can fail without blocking the installation.
-- **Legacy Hardware Support**: Compatible with 2010+ hardware. No SSE4.2 CPU requirements. X11-only (no Wayland). Conservative tool selection avoiding modern GPU/CPU extensions.
-- **VM Compatible**: All hardware-dependent operations use `|| true` to handle virtual machine environments gracefully (e.g., `hwclock` fails in VMs without RTC).
-- **Common Sense UX**: Intuitive keybindings, shortcuts, and workflows using Super key as modifier with vim-like navigation.
-- **State Tracking**: Installation progress and failures are tracked throughout, providing clear feedback on what succeeded and what needs manual attention.
-
-## Hardware Compatibility
-
-Up is designed for **2010 and newer hardware** with conservative requirements:
-
-- **CPU**: No SSE4.2 requirement (works on Core 2 Duo and newer)
-- **GPU**: Basic X11 support (Intel integrated graphics, older NVIDIA/AMD cards)
-- **RAM**: 2GB minimum recommended, 4GB+ for comfortable use
-- **Storage**: 20GB+ recommended for full installation
-- **Display**: 1024x768 minimum resolution
-
-**Incompatible Tools**: Any software requiring AVX, AVX2, SSE4.2, or modern GPU features (e.g., OpenCode, some Electron apps with hardware acceleration).
-
-**Tested Hardware**: Core 2 Duo, Core i3/i5/i7 (1st-8th gen), AMD Ryzen 1000 series, Intel HD Graphics 2000+.
+Skip software that needs AVX/SSE4.2 or a modern GPU (some Electron apps with hardware acceleration). Tested on Core 2 Duo through 8th-gen Intel and Ryzen 1000.
 
 ## Installation Flow
 
@@ -90,8 +75,8 @@ Up is designed for **2010 and newer hardware** with conservative requirements:
             │
             ▼
      ┌──────────────┐
-     │  Login →     │
-     │  startx      │
+     │  LightDM     │
+     │  i3-up       │
      └──────────────┘
 ```
 

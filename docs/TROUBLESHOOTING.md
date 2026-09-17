@@ -361,4 +361,3 @@ sudo touch /var/lib/up/migrations/00N-name.done
 - Install report: `/var/log/up/install-report.txt`
 - Version: `cat /usr/local/share/up/version`
 - Architecture notes: [ARCHITECTURE.md](ARCHITECTURE.md)
-- Dependency risks (XLibre, etc.): [DEPENDENCIES.md](DEPENDENCIES.md)
