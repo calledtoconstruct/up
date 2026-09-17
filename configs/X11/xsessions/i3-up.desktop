@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=i3 (Up)
+Comment=Up Linux i3 session with picom compositor
+Exec=/usr/local/share/up/configs/scripts/start-session.sh
+Type=XSession
+DesktopNames=i3

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=Calculator
+Comment=Open calculator
+Exec=qalculate-gtk
+Terminal=false
+Type=Application
+StartupNotify=true
+StartupWMClass=qalculate-gtk
+Categories=Utility;Calculator;

@@ -1,0 +1,75 @@
+#!/bin/bash
+# Launch the default coding agent.
+# Usage: up-agent [--inline] [--pick] [--prompt TEXT]
+set -euo pipefail
+
+export UP_ROOT="${UP_ROOT:-/usr/local/share/up}"
+
+inline=0
+pick=0
+prompt=""
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --inline) inline=1; shift ;;
+        --pick) pick=1; shift ;;
+        --prompt)
+            prompt=${2:?--prompt needs a value}
+            shift 2
+            ;;
+        *)
+            echo "Unexpected argument: $1" >&2
+            echo "To pass a prompt: up-agent-prompt \"$*\"" >&2
+            exit 1
+            ;;
+    esac
+done
+
+if [ "$PWD" = "${HOME:-}" ] && [ -d "$HOME/projects" ]; then
+    cd "$HOME/projects"
+fi
+
+agent=$("$UP_ROOT/bin/up-default-agent" | tr -d '\n' || true)
+
+if [ -z "$agent" ]; then
+    if [ "$pick" = 1 ]; then
+        exec "$UP_ROOT/bin/up-default-agent-pick"
+    fi
+    echo "Choose a default agent: up-default-agent grok|claude|codex|opencode" >&2
+    echo "Or: Super+Alt+Space → Setup → Agent" >&2
+    exit 1
+fi
+
+if ! command -v "$agent" >/dev/null 2>&1; then
+    echo "$agent is not on PATH. Install it, or pick another with up-default-agent." >&2
+    exit 1
+fi
+
+case "$agent" in
+    grok)
+        command=(grok --permission-mode bypassPermissions)
+        [ -n "$prompt" ] && command+=(-- "$prompt")
+        ;;
+    claude)
+        command=(claude --permission-mode auto)
+        [ -n "$prompt" ] && command+=(-- "$prompt")
+        ;;
+    codex)
+        command=(codex --approve-for-me)
+        [ -n "$prompt" ] && command+=(-- "$prompt")
+        ;;
+    opencode)
+        command=(opencode --auto)
+        [ -n "$prompt" ] && command+=(--prompt "$prompt")
+        ;;
+    *)
+        echo "Unsupported default agent: $agent" >&2
+        exit 1
+        ;;
+esac
+
+if [ "$inline" = 1 ]; then
+    exec "${command[@]}"
+fi
+
+exec alacritty --class up-agent -e "${command[@]}"

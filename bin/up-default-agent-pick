@@ -1,0 +1,15 @@
+#!/bin/bash
+# Rofi (or stdin) picker for up-default-agent.
+set -euo pipefail
+
+export UP_ROOT="${UP_ROOT:-/usr/local/share/up}"
+
+choices=$(printf '%s\n' grok claude codex opencode)
+if [ -n "${DISPLAY:-}" ] && command -v rofi >/dev/null 2>&1; then
+    pick=$(printf '%s\n' "$choices" | rofi -dmenu -i -p "Default agent" -kb-cancel Escape || true)
+else
+    echo "Agents: grok claude codex opencode" >&2
+    read -r -p "Default agent: " pick
+fi
+[ -n "${pick:-}" ] || exit 0
+exec "$UP_ROOT/bin/up-default-agent" "$pick"

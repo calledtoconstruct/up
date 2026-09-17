@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# Install the login-screen wallpaper. Runs as root (NOPASSWD for group up).
+# Usage: up-set-greeter-background /path/to/image.jpg
+set -euo pipefail
+
+if [ "$(id -u)" -ne 0 ]; then
+    echo "up-set-greeter-background must run as root" >&2
+    exit 1
+fi
+
+src="${1:-}"
+if [ -z "$src" ] || [ ! -f "$src" ]; then
+    echo "Usage: up-set-greeter-background IMAGE" >&2
+    exit 2
+fi
+
+case "$src" in
+    /usr/local/share/up/configs/backgrounds/*|/usr/share/backgrounds/*|/home/*)
+        ;;
+    *)
+        echo "Refusing path outside backgrounds or home: $src" >&2
+        exit 3
+        ;;
+esac
+
+dest_dir=/usr/share/backgrounds/up
+dest="$dest_dir/current.jpg"
+greeter=/etc/lightdm/lightdm-gtk-greeter.conf
+
+install -d -m 775 -o root -g up "$dest_dir"
+cp -f "$src" "$dest"
+chmod 644 "$dest"
+chown root:root "$dest"
+
+if [ -f "$greeter" ]; then
+    if grep -qE '^[[:space:]]*background[[:space:]]*=' "$greeter"; then
+        sed -i "s|^[[:space:]]*background[[:space:]]*=.*|background = $dest|" "$greeter"
+    else
+        printf '\nbackground = %s\n' "$dest" >>"$greeter"
+    fi
+    chown root:up "$greeter"
+    chmod 664 "$greeter"
+fi
+
+dropin=/etc/lightdm/lightdm-gtk-greeter.conf.d/theme.conf
+if [ -f "$dropin" ]; then
+    sed -i "s|^background = .*|background = $dest|" "$dropin" || true
+fi
+
+echo "greeter background = $dest"

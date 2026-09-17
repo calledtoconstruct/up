@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=X (Twitter)
+Comment=Open X/Twitter
+Exec=firefox "https://x.com"
+Terminal=false
+Type=Application
+StartupNotify=true
+StartupWMClass=firefox
+Categories=Network;WebBrowser;

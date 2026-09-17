@@ -1,0 +1,73 @@
+# Solara Drift Theme - Gentle solar wind currents
+name = "Solara Drift"
+
+# ===== STANDARD COLORS - Used by most applications =====
+[colors]
+background = "#1C2526"
+foreground = "#F1F5F9"
+accent = "#FBBF24"
+urgent = "#F87171"
+alternate = "#2F3A4F"
+hover = "#60A5FA"
+active = "#34D399"
+
+# Normal terminal colors (golden-teal transition tint)
+black = "#1C2526"
+red = "#F87171"
+green = "#34D399"
+yellow = "#FBBF24"
+blue = "#60A5FA"
+magenta = "#A78BFA"
+cyan = "#22D3EE"
+white = "#F1F5F9"
+
+# Bright terminal colors
+bright_black = "#475569"
+bright_red = "#FCA5A5"
+bright_green = "#6EE7B7"
+bright_yellow = "#FDE047"
+bright_blue = "#93C5FD"
+bright_magenta = "#C4B5FD"
+bright_cyan = "#67E8F9"
+bright_white = "#F8FAFC"
+
+# ===== APPLICATION-SPECIFIC COLORS =====
+
+[i3]
+bg = "#1C2526"
+fg = "#F1F5F9"
+accent = "#FBBF24"
+urgent = "#F87171"
+
+[alacritty]
+primary_bg = "#1C2526"
+primary_fg = "#F1F5F9"
+cursor = "#FBBF24"
+
+[rofi]
+background = "#1C2526"
+foreground = "#F1F5F9"
+selected = "#FBBF24"
+urgent = "#F87171"
+alternate = "#2F3A4F"
+hover = "#60A5FA"
+active = "#34D399"
+
+[picom]
+shadow = "#000000"
+shadow_alpha = "0.3"
+
+# ===== GTK =====
+[gtk]
+# Custom theme - generated from colors
+theme_name = "Solara-Drift"
+# No external package - generated from colors
+
+# ===== BACKGROUND =====
+[background]
+# Custom backgrounds
+directory = "../backgrounds/solara-drift/dark"
+fallback = "/usr/share/backgrounds/archlinux/sunset.jpg"
+
+[nvim]
+colorscheme = "custom"

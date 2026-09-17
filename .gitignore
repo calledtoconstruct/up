@@ -1,0 +1,6 @@
+# Generated / machine-local — never part of the vendor tree
+__pycache__/
+*.py[cod]
+*.qcow2
+*.OVMF_VARS.fd
+.DS_Store

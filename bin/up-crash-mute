@@ -1,0 +1,42 @@
+#!/bin/bash
+# Silence crash toasts for one program, or list/unmute.
+# Usage: up-crash-mute
+#        up-crash-mute <name-or-path>
+#        up-crash-mute <name-or-path> off
+set -euo pipefail
+
+MUTE="${UP_CRASH_MUTE:-$HOME/.config/up/crash-mute}"
+mkdir -p "$(dirname "$MUTE")"
+touch "$MUTE"
+
+name_of() {
+    local raw="$1"
+    raw="${raw%/}"
+    printf '%s\n' "${raw##*/}"
+}
+
+if [ $# -eq 0 ]; then
+    if [ ! -s "$MUTE" ]; then
+        echo "(none)"
+        exit 0
+    fi
+    cat "$MUTE"
+    exit 0
+fi
+
+target=$(name_of "$1")
+action="${2:-on}"
+
+case "$action" in
+    off)
+        grep -Fxv "$target" "$MUTE" >"$MUTE.tmp" || true
+        mv "$MUTE.tmp" "$MUTE"
+        ;;
+    on)
+        grep -Fxq "$target" "$MUTE" 2>/dev/null || printf '%s\n' "$target" >>"$MUTE"
+        ;;
+    *)
+        echo "Usage: up-crash-mute [program] [on|off]" >&2
+        exit 1
+        ;;
+esac

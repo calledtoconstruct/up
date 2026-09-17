@@ -1,0 +1,123 @@
+#!/bin/bash
+# Select Desktop Image - background selector for the current theme
+# Usage: up-select-desktop-image [--list | --image PATH]
+set -euo pipefail
+
+export UP_ROOT="${UP_ROOT:-/usr/local/share/up}"
+# shellcheck source=../configs/scripts/theme-utils.sh
+source "$UP_ROOT/configs/scripts/theme-utils.sh"
+
+STATE_FILE="$HOME/.config/up-theme"
+BG_STATE_FILE="$HOME/.config/up-background"
+
+WANT_IMAGE=""
+LIST_ONLY=false
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --image)
+            WANT_IMAGE="${2:-}"
+            shift 2
+            ;;
+        --list)
+            LIST_ONLY=true
+            shift
+            ;;
+        -h|--help)
+            cat <<'EOF'
+Usage: up-select-desktop-image [--list | --image PATH]
+
+  (no args)   Open the rofi picker
+  --list      Print available image paths
+  --image P   Apply P (absolute path, basename, or path relative to the theme tree)
+EOF
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1" >&2
+            exit 2
+            ;;
+    esac
+done
+
+if [ ! -f "$STATE_FILE" ]; then
+    notify-send "Error" "No current theme found. Please switch themes first." -u critical 2>/dev/null || true
+    echo "Error: no current theme in $STATE_FILE" >&2
+    exit 1
+fi
+
+CURRENT_THEME=$(tr -d '[:space:]' < "$STATE_FILE")
+CURRENT_BG=""
+if [ -f "$BG_STATE_FILE" ]; then
+    CURRENT_BG=$(cat "$BG_STATE_FILE")
+fi
+
+mapfile -t BG_ARRAY < <(list_theme_backgrounds "$CURRENT_THEME")
+if [ ${#BG_ARRAY[@]} -eq 0 ] || [ -z "${BG_ARRAY[0]:-}" ]; then
+    notify-send "No Backgrounds Available" "Theme '${CURRENT_THEME}' has no background images." -u normal 2>/dev/null || true
+    echo "Error: no backgrounds for theme ${CURRENT_THEME}" >&2
+    exit 1
+fi
+
+resolve_image() {
+    local want="$1"
+    local f
+    if [ -f "$want" ]; then
+        printf '%s\n' "$want"
+        return 0
+    fi
+    for f in "${BG_ARRAY[@]}"; do
+        if [ "$f" = "$want" ] || [ "$(basename "$f")" = "$want" ]; then
+            printf '%s\n' "$f"
+            return 0
+        fi
+        case "$f" in
+            */"$want") printf '%s\n' "$f"; return 0 ;;
+        esac
+    done
+    return 1
+}
+
+if [ "$LIST_ONLY" = true ]; then
+    printf '%s\n' "${BG_ARRAY[@]}"
+    exit 0
+fi
+
+if [ -n "$WANT_IMAGE" ]; then
+    SELECTED_FULL=$(resolve_image "$WANT_IMAGE") || {
+        echo "Error: background not found: $WANT_IMAGE" >&2
+        exit 1
+    }
+    apply_desktop_image "$SELECTED_FULL"
+    notify-send "Desktop Image Changed" "Applied: $(basename "$SELECTED_FULL")" -u normal 2>/dev/null || \
+        echo "Desktop image changed: $SELECTED_FULL"
+    exit 0
+fi
+
+BG_LIST=""
+for file in "${BG_ARRAY[@]}"; do
+    rel_path="$file"
+    case "$file" in
+        */configs/backgrounds/*) rel_path="${file#*/configs/backgrounds/}" ;;
+        /usr/share/backgrounds/*) rel_path="${file#/usr/share/backgrounds/}" ;;
+    esac
+    if [ "$file" = "$CURRENT_BG" ]; then
+        BG_LIST="${BG_LIST}✓ ${rel_path}\n"
+    else
+        BG_LIST="${BG_LIST}  ${rel_path}\n"
+    fi
+done
+
+SELECTED=$(echo -e "$BG_LIST" | rofi -dmenu -i -p "Select Desktop Image" -lines 10 -width 400 -kb-cancel Escape || true)
+if [ -z "$SELECTED" ]; then
+    exit 0
+fi
+
+SELECTED_REL=$(echo "$SELECTED" | sed 's/^[* ✓]* *//')
+SELECTED_FULL=$(resolve_image "$SELECTED_REL") || {
+    notify-send "Error" "Selected background file not found: ${SELECTED_REL}" -u critical 2>/dev/null || true
+    exit 1
+}
+
+apply_desktop_image "$SELECTED_FULL"
+notify-send "Desktop Image Changed" "Applied: $(basename "$SELECTED_FULL")" -u normal 2>/dev/null || \
+    echo "Desktop image changed: $SELECTED_FULL"

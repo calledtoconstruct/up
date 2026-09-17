@@ -1,0 +1,10 @@
+#!/bin/bash
+# Font Chooser - Interactive or scripted monospace font selection
+# Usage: up-font-chooser [--list | --font NAME]
+
+set -euo pipefail
+
+export UP_ROOT="${UP_ROOT:-/usr/local/share/up}"
+LIB_DIR="$UP_ROOT/configs/scripts"
+
+exec "$LIB_DIR/font-chooser.sh" "$@"

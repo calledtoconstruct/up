@@ -1,0 +1,9 @@
+#!/bin/bash
+# Install GHCup - Install GHCup with Haskell Language Server
+# Usage: up-install-ghcup [--with-hls] [--with-stack]
+
+set -euo pipefail
+
+LIB_DIR="/usr/local/share/up/configs/scripts/install"
+
+exec "$LIB_DIR/install-ghcup.sh" "$@"

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Name=System Information
+Comment=fastfetch
+Exec=alacritty --class system-information -e sh -c "fastfetch; read -n 1 -s"
+Terminal=false
+Type=Application
+StartupNotify=true
+StartupWMClass=system-information

@@ -1,0 +1,73 @@
+# Dusken Glade Theme - Twilight forest fireflies
+name = "Dusken Glade"
+
+# ===== STANDARD COLORS - Used by most applications =====
+[colors]
+background = "#1A1F2E"
+foreground = "#E5E0D8"
+accent = "#4A9C6E"
+urgent = "#F87171"
+alternate = "#2C3347"
+hover = "#8B6FB8"
+active = "#34D399"
+
+# Normal terminal colors (forest green-purple tint)
+black = "#1A1F2E"
+red = "#F87171"
+green = "#4A9C6E"
+yellow = "#D4B36B"
+blue = "#6B8FB8"
+magenta = "#8B6FB8"
+cyan = "#34D399"
+white = "#E5E0D8"
+
+# Bright terminal colors
+bright_black = "#3D4556"
+bright_red = "#FCA5A5"
+bright_green = "#6EE7B7"
+bright_yellow = "#FDE68A"
+bright_blue = "#93C5FD"
+bright_magenta = "#C4B5FD"
+bright_cyan = "#5EEAD4"
+bright_white = "#F5F5F4"
+
+# ===== APPLICATION-SPECIFIC COLORS =====
+
+[i3]
+bg = "#1A1F2E"
+fg = "#E5E0D8"
+accent = "#4A9C6E"
+urgent = "#F87171"
+
+[alacritty]
+primary_bg = "#1A1F2E"
+primary_fg = "#E5E0D8"
+cursor = "#4A9C6E"
+
+[rofi]
+background = "#1A1F2E"
+foreground = "#E5E0D8"
+selected = "#4A9C6E"
+urgent = "#F87171"
+alternate = "#2C3347"
+hover = "#8B6FB8"
+active = "#34D399"
+
+[picom]
+shadow = "#000000"
+shadow_alpha = "0.3"
+
+# ===== GTK =====
+[gtk]
+# Custom theme - generated from colors
+theme_name = "Dusken-Glade"
+# No external package - generated from colors
+
+# ===== BACKGROUND =====
+[background]
+# Custom backgrounds
+directory = "../backgrounds/dusken-glade/dark"
+fallback = "/usr/share/backgrounds/archlinux/mountain.jpg"
+
+[nvim]
+colorscheme = "custom"

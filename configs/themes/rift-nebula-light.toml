@@ -1,0 +1,73 @@
+# Rift Nebula Light Theme - Cosmic rift in bright starlit day
+name = "Rift Nebula Light"
+
+# ===== STANDARD COLORS - Used by most applications =====
+[colors]
+background = "#F0F4FF"
+foreground = "#0B0E1F"
+accent = "#6D28D9"
+urgent = "#F43F5E"
+alternate = "#E0E7FF"
+hover = "#C4B5FD"
+active = "#7C3AED"
+
+# Normal terminal colors (deep violet-cyan tint)
+black = "#0B0E1F"
+red = "#F43F5E"
+green = "#10B981"
+yellow = "#CA8A04"
+blue = "#4338CA"
+magenta = "#6D28D9"
+cyan = "#22D3EE"
+white = "#475569"
+
+# Bright terminal colors
+bright_black = "#374151"
+bright_red = "#FB7185"
+bright_green = "#22C55E"
+bright_yellow = "#EAB308"
+bright_blue = "#6366F1"
+bright_magenta = "#8B5CF6"
+bright_cyan = "#67E8F9"
+bright_white = "#0B0E1F"
+
+# ===== APPLICATION-SPECIFIC COLORS =====
+
+[i3]
+bg = "#F0F4FF"
+fg = "#0B0E1F"
+accent = "#6D28D9"
+urgent = "#F43F5E"
+
+[alacritty]
+primary_bg = "#F0F4FF"
+primary_fg = "#0B0E1F"
+cursor = "#6D28D9"
+
+[rofi]
+background = "#F0F4FF"
+foreground = "#0B0E1F"
+selected = "#6D28D9"
+urgent = "#F43F5E"
+alternate = "#E0E7FF"
+hover = "#C4B5FD"
+active = "#7C3AED"
+
+[picom]
+shadow = "#000000"
+shadow_alpha = "0.2"
+
+# ===== GTK =====
+[gtk]
+# Custom theme - generated from colors
+theme_name = "Rift-Nebula-Light"
+# No external package - generated from colors
+
+# ===== BACKGROUND =====
+[background]
+# Custom backgrounds
+directory = "../backgrounds/rift-nebula/light"
+fallback = "/usr/share/backgrounds/archlinux/sunset.jpg"
+
+[nvim]
+colorscheme = "custom"

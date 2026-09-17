@@ -1,0 +1,54 @@
+#!/bin/bash
+# Diagnose a crashed process with the default coding agent.
+# Usage: up-agent-crash [--dry-run] <pid> [comm] [exe] [signal]
+set -euo pipefail
+
+export UP_ROOT="${UP_ROOT:-/usr/local/share/up}"
+
+dry_run=0
+if [ "${1:-}" = "--dry-run" ]; then
+    dry_run=1
+    shift
+fi
+
+pid=${1:?usage: up-agent-crash [--dry-run] <pid> [comm] [exe] [signal]}
+if ! [[ "$pid" =~ ^[0-9]+$ ]]; then
+    echo "Not a PID: $pid" >&2
+    echo "Usage: up-agent-crash [--dry-run] <pid>   (see: coredumpctl list)" >&2
+    exit 1
+fi
+
+comm=${2:-unknown}
+exe=${3:-unknown}
+signal=${4:-unknown}
+
+skill="$UP_ROOT/default/agents/skills/diagnose-crash/SKILL.md"
+
+when=$(coredumpctl list "$pid" --no-pager --no-legend 2>/dev/null | tail -1 | cut -d' ' -f1-4) || true
+when=${when:-unknown}
+
+prompt=$(
+    cat <<PROMPT
+A process crashed on this Up Linux machine and I want to know why.
+
+What systemd-coredump recorded:
+  process:  $comm
+  PID:      $pid
+  binary:   $exe
+  signal:   $signal
+  time:     $when
+
+Use the diagnose-crash skill: it covers how to investigate, what to report, and
+when a crash is worth treating as an Up bug. If your harness has no skill
+mechanism, read the skill files directly and follow them instead:
+
+  $skill
+PROMPT
+)
+
+if [ "$dry_run" = 1 ]; then
+    printf '%s\n' "$prompt"
+    exit 0
+fi
+
+exec "$UP_ROOT/bin/up-agent" --prompt "$prompt"

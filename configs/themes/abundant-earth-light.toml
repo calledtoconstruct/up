@@ -1,0 +1,73 @@
+# Abundant Earth Light Theme - Sunlit parchment fields and olive shade
+name = "Abundant Earth Light"
+
+# ===== STANDARD COLORS - Used by most applications =====
+[colors]
+background = "#F4EBD8"
+foreground = "#3D3428"
+accent = "#B45309"
+urgent = "#9A3412"
+alternate = "#E8DCC4"
+hover = "#DDD0B4"
+active = "#4D7C0F"
+
+# Normal terminal colors (ink on warm paper)
+black = "#3D3428"
+red = "#9A3412"
+green = "#4D7C0F"
+yellow = "#A16207"
+blue = "#3F5A6B"
+magenta = "#7C5A3A"
+cyan = "#4A6B4A"
+white = "#5C5346"
+
+# Bright terminal colors
+bright_black = "#6B5E4E"
+bright_red = "#C2410C"
+bright_green = "#65A30D"
+bright_yellow = "#CA8A04"
+bright_blue = "#54788C"
+bright_magenta = "#A67C52"
+bright_cyan = "#5A8A5A"
+bright_white = "#1C1812"
+
+# ===== APPLICATION-SPECIFIC COLORS =====
+
+[i3]
+bg = "#F4EBD8"
+fg = "#3D3428"
+accent = "#B45309"
+urgent = "#9A3412"
+
+[alacritty]
+primary_bg = "#F4EBD8"
+primary_fg = "#3D3428"
+cursor = "#B45309"
+
+[rofi]
+background = "#F4EBD8"
+foreground = "#3D3428"
+selected = "#B45309"
+urgent = "#9A3412"
+alternate = "#E8DCC4"
+hover = "#DDD0B4"
+active = "#4D7C0F"
+
+[picom]
+shadow = "#000000"
+shadow_alpha = "0.2"
+
+# ===== GTK =====
+[gtk]
+# Custom theme - generated from colors
+theme_name = "Abundant-Earth-Light"
+# No external package - generated from colors
+
+# ===== BACKGROUND =====
+[background]
+# Custom backgrounds
+directory = "../backgrounds/abundant-earth/light"
+fallback = "/usr/share/backgrounds/archlinux/landscape.jpg"
+
+[nvim]
+colorscheme = "custom"

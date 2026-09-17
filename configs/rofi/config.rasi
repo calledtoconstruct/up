@@ -1,0 +1,12 @@
+configuration {
+    modi: "drun,run,window";
+    show-icons: true;
+    icon-theme: "Papirus";
+    font: "DejaVu Sans Mono 10";
+    display-drun: "Apps";
+    /* Prefer same-dir theme file written by switch-theme.sh */
+}
+
+/* Path is relative to this config file (~/.config/rofi/), NOT the process CWD.
+   The old value ".config/rofi/theme.rasi" broke when rofi was started from i3. */
+@theme "theme.rasi"

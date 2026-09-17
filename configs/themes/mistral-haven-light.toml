@@ -1,0 +1,73 @@
+# Mistral Haven Light Theme - Bright misty coastal shores
+name = "Mistral Haven Light"
+
+# ===== STANDARD COLORS - Used by most applications =====
+[colors]
+background = "#F0F9FF"
+foreground = "#0C1F2B"
+accent = "#14B8A6"
+urgent = "#F87171"
+alternate = "#E0F2FE"
+hover = "#BAE6FD"
+active = "#0F766E"
+
+# Normal terminal colors (cool seafoam tint)
+black = "#0C1F2B"
+red = "#F87171"
+green = "#15803D"
+yellow = "#B45309"
+blue = "#1E40AF"
+magenta = "#7E22CE"
+cyan = "#14B8A6"
+white = "#475569"
+
+# Bright terminal colors
+bright_black = "#1E3A5F"
+bright_red = "#FCA5A5"
+bright_green = "#22C55E"
+bright_yellow = "#D97706"
+bright_blue = "#3B82F6"
+bright_magenta = "#A855F7"
+bright_cyan = "#2DD4BF"
+bright_white = "#0C1F2B"
+
+# ===== APPLICATION-SPECIFIC COLORS =====
+
+[i3]
+bg = "#F0F9FF"
+fg = "#0C1F2B"
+accent = "#14B8A6"
+urgent = "#F87171"
+
+[alacritty]
+primary_bg = "#F0F9FF"
+primary_fg = "#0C1F2B"
+cursor = "#14B8A6"
+
+[rofi]
+background = "#F0F9FF"
+foreground = "#0C1F2B"
+selected = "#14B8A6"
+urgent = "#F87171"
+alternate = "#E0F2FE"
+hover = "#BAE6FD"
+active = "#0F766E"
+
+[picom]
+shadow = "#000000"
+shadow_alpha = "0.2"
+
+# ===== GTK =====
+[gtk]
+# Custom theme - generated from colors
+theme_name = "Mistral-Haven-Light"
+# No external package - generated from colors
+
+# ===== BACKGROUND =====
+[background]
+# Custom backgrounds
+directory = "../backgrounds/mistral-haven/light"
+fallback = "/usr/share/backgrounds/archlinux/mountain.jpg"
+
+[nvim]
+colorscheme = "custom"

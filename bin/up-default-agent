@@ -1,0 +1,47 @@
+#!/bin/bash
+# Print or set the default coding agent (stored in ~/.config/up/config).
+# Usage: up-default-agent
+#        up-default-agent grok|claude|codex|opencode
+set -euo pipefail
+
+export UP_ROOT="${UP_ROOT:-/usr/local/share/up}"
+CONFIG="${UP_CONFIG:-$HOME/.config/up/config}"
+
+read_agent() {
+    local v=""
+    if [ -f "$CONFIG" ]; then
+        v=$(grep -E '^[[:space:]]*agent[[:space:]]*=' "$CONFIG" | head -1 | cut -d'"' -f2 || true)
+    fi
+    printf '%s' "$v"
+}
+
+if [ $# -eq 0 ]; then
+    read_agent
+    echo
+    exit 0
+fi
+
+case "$1" in
+    grok|claude|codex|opencode) agent="$1" ;;
+    *)
+        echo "Usage: up-default-agent [grok|claude|codex|opencode]" >&2
+        exit 1
+        ;;
+esac
+
+mkdir -p "$(dirname "$CONFIG")"
+if [ ! -f "$CONFIG" ]; then
+    printf 'agent = "%s"\n' "$agent" >"$CONFIG"
+elif grep -qE '^[[:space:]]*agent[[:space:]]*=' "$CONFIG"; then
+    tmp=$(mktemp)
+    sed -E 's/^[[:space:]]*agent[[:space:]]*=.*/agent = "'"$agent"'"/' "$CONFIG" >"$tmp"
+    mv "$tmp" "$CONFIG"
+else
+    printf '\nagent = "%s"\n' "$agent" >>"$CONFIG"
+fi
+
+if ! command -v "$agent" >/dev/null 2>&1; then
+    echo "Saved default agent: $agent (not on PATH yet). Install the CLI, then retry." >&2
+    exit 0
+fi
+echo "$agent"

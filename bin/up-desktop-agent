@@ -1,0 +1,8 @@
+#!/bin/bash
+# Desktop apply agent — serial queue worker for theme/polybar/picom transitions
+# Usage: up-desktop-agent
+# Normally started by i3; safe to run manually for debugging.
+
+set -euo pipefail
+export UP_ROOT="${UP_ROOT:-/usr/local/share/up}"
+exec "$UP_ROOT/configs/scripts/desktop-agent.sh" "$@"

@@ -1,0 +1,107 @@
+/* Default Rofi theme (Aetherweft-like). Overwritten by switch-theme.sh. */
+/* Kept in-tree so @theme "theme.rasi" resolves before first theme apply. */
+
+* {
+    font:   "DejaVu Sans Mono 10";
+
+    bg0:     #0F172A;
+    bg1:     #1E2937;
+    fg0:     #F1F5F9;
+
+    accent-color:  #22D3EE;
+    urgent-color:  #F87171;
+    selected-color: #67E8F9;
+
+    background-color:   transparent;
+    text-color:         #F1F5F9;
+
+    margin:     0;
+    padding:    0;
+    spacing:    0;
+}
+
+window {
+    location:   center;
+    width:      480px;
+    transparency: "real";
+    padding:    10px;
+
+    background-color:   #0F172A;
+    border-color:       #67E8F9;
+    border:             2px;
+}
+
+inputbar {
+    spacing:    2px;
+    padding:    2px;
+
+    background-color:   #1E2937;
+    children:   [ prompt, entry ];
+}
+
+prompt, entry, element-icon, element-text {
+    vertical-align: 0.5;
+}
+
+prompt {
+    text-color: #22D3EE;
+}
+
+entry {
+    text-color: #F1F5F9;
+    placeholder-color: #1E2937;
+}
+
+textbox {
+    padding:            8px;
+    background-color:   #1E2937;
+}
+
+listview {
+    padding:    2px 0;
+    lines:      10;
+    columns:    1;
+
+    fixed-height:   false;
+}
+
+element {
+    padding:    4px;
+    spacing:    4px;
+}
+
+element normal normal {
+    text-color: #F1F5F9;
+}
+
+element normal urgent {
+    text-color: #F87171;
+}
+
+element normal active {
+    text-color: #22D3EE;
+}
+
+element alternate active {
+    text-color: #22D3EE;
+}
+
+element selected {
+    text-color: #0F172A;
+}
+
+element selected normal, element selected active {
+    background-color:   #67E8F9;
+}
+
+element selected urgent {
+    background-color:   #F87171;
+}
+
+element-icon {
+    size:   0.8em;
+}
+
+element-text {
+    text-color: inherit;
+}

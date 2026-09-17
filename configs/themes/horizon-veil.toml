@@ -1,0 +1,73 @@
+# Horizon Veil Theme - Layered atmospheric horizons
+name = "Horizon Veil"
+
+# ===== STANDARD COLORS - Used by most applications =====
+[colors]
+background = "#1E1B2E"
+foreground = "#E0E7FF"
+accent = "#7C3AED"
+urgent = "#F472B6"
+alternate = "#2A2A4A"
+hover = "#EC4899"
+active = "#6366F1"
+
+# Normal terminal colors (indigo-rose tint)
+black = "#1E1B2E"
+red = "#F472B6"
+green = "#34D399"
+yellow = "#FBBF24"
+blue = "#6366F1"
+magenta = "#7C3AED"
+cyan = "#EC4899"
+white = "#E0E7FF"
+
+# Bright terminal colors
+bright_black = "#4C4D6A"
+bright_red = "#F9A8D4"
+bright_green = "#6EE7B7"
+bright_yellow = "#FDE68A"
+bright_blue = "#818CF8"
+bright_magenta = "#A78BFA"
+bright_cyan = "#F472B6"
+bright_white = "#F5F3FF"
+
+# ===== APPLICATION-SPECIFIC COLORS =====
+
+[i3]
+bg = "#1E1B2E"
+fg = "#E0E7FF"
+accent = "#7C3AED"
+urgent = "#F472B6"
+
+[alacritty]
+primary_bg = "#1E1B2E"
+primary_fg = "#E0E7FF"
+cursor = "#7C3AED"
+
+[rofi]
+background = "#1E1B2E"
+foreground = "#E0E7FF"
+selected = "#7C3AED"
+urgent = "#F472B6"
+alternate = "#2A2A4A"
+hover = "#EC4899"
+active = "#6366F1"
+
+[picom]
+shadow = "#000000"
+shadow_alpha = "0.3"
+
+# ===== GTK =====
+[gtk]
+# Custom theme - generated from colors
+theme_name = "Horizon-Veil"
+# No external package - generated from colors
+
+# ===== BACKGROUND =====
+[background]
+# Custom backgrounds
+directory = "../backgrounds/horizon-veil/dark"
+fallback = "/usr/share/backgrounds/archlinux/sunset.jpg"
+
+[nvim]
+colorscheme = "custom"

@@ -1,0 +1,50 @@
+#!/bin/bash
+# Random Desktop Image - pick a different wallpaper for the current theme
+set -euo pipefail
+
+export UP_ROOT="${UP_ROOT:-/usr/local/share/up}"
+# shellcheck source=../configs/scripts/theme-utils.sh
+source "$UP_ROOT/configs/scripts/theme-utils.sh"
+
+STATE_FILE="$HOME/.config/up-theme"
+BG_STATE_FILE="$HOME/.config/up-background"
+
+if [ ! -f "$STATE_FILE" ]; then
+    notify-send "Error" "No current theme found. Please switch themes first." -u critical 2>/dev/null || true
+    echo "Error: no current theme in $STATE_FILE" >&2
+    exit 1
+fi
+
+CURRENT_THEME=$(tr -d '[:space:]' < "$STATE_FILE")
+CURRENT_BG=""
+if [ -f "$BG_STATE_FILE" ]; then
+    CURRENT_BG=$(cat "$BG_STATE_FILE")
+fi
+
+mapfile -t BG_ARRAY < <(list_theme_backgrounds "$CURRENT_THEME")
+if [ ${#BG_ARRAY[@]} -eq 0 ] || [ -z "${BG_ARRAY[0]:-}" ]; then
+    notify-send "No Backgrounds Available" "Theme '${CURRENT_THEME}' has no background images." -u normal 2>/dev/null || true
+    echo "Error: no backgrounds for theme ${CURRENT_THEME}" >&2
+    exit 1
+fi
+
+SELECTED_FULL=""
+if [ ${#BG_ARRAY[@]} -eq 1 ]; then
+    SELECTED_FULL="${BG_ARRAY[0]}"
+else
+    FILTERED_ARRAY=()
+    for bg in "${BG_ARRAY[@]}"; do
+        if [ "$bg" != "$CURRENT_BG" ]; then
+            FILTERED_ARRAY+=("$bg")
+        fi
+    done
+    if [ ${#FILTERED_ARRAY[@]} -eq 0 ]; then
+        FILTERED_ARRAY=("${BG_ARRAY[@]}")
+    fi
+    RANDOM_INDEX=$((RANDOM % ${#FILTERED_ARRAY[@]}))
+    SELECTED_FULL="${FILTERED_ARRAY[$RANDOM_INDEX]}"
+fi
+
+apply_desktop_image "$SELECTED_FULL"
+notify-send "Desktop Image Changed" "Applied: $(basename "$SELECTED_FULL")" -u normal 2>/dev/null || \
+    echo "Desktop image changed: $SELECTED_FULL"

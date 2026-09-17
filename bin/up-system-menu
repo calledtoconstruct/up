@@ -1,0 +1,16 @@
+#!/bin/bash
+# System Menu - Hierarchical rofi-based menu for system actions
+# Usage: up-system-menu [MENU]
+#        up-system-menu --invoke PATH [-- ARGS...]
+# Uses UP_ROOT environment variable for all path derivations
+
+set -euo pipefail
+
+# Set UP_ROOT to default installation location if not already set
+export UP_ROOT="${UP_ROOT:-/usr/local/share/up}"
+
+# Derive script directory from UP_ROOT
+LIB_DIR="$UP_ROOT/configs/scripts"
+
+# Execute the main system menu script with all arguments
+exec "$LIB_DIR/system-menu.sh" "$@"

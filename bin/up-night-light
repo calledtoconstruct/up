@@ -1,0 +1,161 @@
+#!/bin/bash
+# Night Light Toggle - Enable/disable blue light filter
+# Uses redshift for blue light filtering
+
+set -euo pipefail
+
+# Configuration
+REDSHIFT_PID_FILE="/tmp/up-redshift.pid"
+REDSHIFT_CONFIG="${HOME}/.config/redshift.conf"
+
+# Check if redshift is available
+if ! command -v redshift >/dev/null 2>&1; then
+    echo "Error: redshift not available"
+    exit 1
+fi
+
+# Safe notification function
+notify() {
+    local title="$1"
+    local message="$2"
+    local urgency="${3:-normal}"
+
+    if command -v notify-send >/dev/null 2>&1; then
+        notify-send "$title" "$message" -u "$urgency" 2>/dev/null || echo "$title: $message"
+    else
+        echo "$title: $message"
+    fi
+}
+
+# Check if night light is running
+is_night_light_active() {
+    [ -f "$REDSHIFT_PID_FILE" ] && kill -0 "$(cat "$REDSHIFT_PID_FILE")" 2>/dev/null
+}
+
+# Start night light
+start_night_light() {
+    if is_night_light_active; then
+        notify "Night Light" "Already active" "normal"
+        return 0
+    fi
+
+    # Create basic redshift config if it doesn't exist
+    mkdir -p "${HOME}/.config"
+    if [ ! -f "$REDSHIFT_CONFIG" ]; then
+        cat > "$REDSHIFT_CONFIG" << 'EOF'
+[redshift]
+temp-day=5700
+temp-night=3500
+transition=1
+gamma=0.8:0.7:0.8
+adjustment-method=randr
+location-provider=manual
+
+[manual]
+lat=40.7128
+lon=-74.0060
+EOF
+    fi
+
+    # Start redshift
+    redshift -c "$REDSHIFT_CONFIG" &
+    local pid=$!
+    echo $pid > "$REDSHIFT_PID_FILE"
+
+    # Wait a moment to ensure it started
+    sleep 1
+
+    if kill -0 $pid 2>/dev/null; then
+        notify "Night Light" "Enabled - Blue light filter active" "normal"
+    else
+        rm -f "$REDSHIFT_PID_FILE"
+        notify "Night Light" "Failed to start" "critical"
+        exit 1
+    fi
+}
+
+# Stop night light
+stop_night_light() {
+    if ! is_night_light_active; then
+        notify "Night Light" "Already disabled" "normal"
+        return 0
+    fi
+
+    local pid=$(cat "$REDSHIFT_PID_FILE")
+    kill "$pid" 2>/dev/null || true
+    rm -f "$REDSHIFT_PID_FILE"
+
+    # Reset gamma to normal
+    redshift -x 2>/dev/null || true
+
+    notify "Night Light" "Disabled - Blue light filter off" "normal"
+}
+
+# Toggle night light
+toggle_night_light() {
+    if is_night_light_active; then
+        stop_night_light
+    else
+        start_night_light
+    fi
+}
+
+# Show status menu
+show_status_menu() {
+    local status="Disabled"
+    if is_night_light_active; then
+        status="Enabled"
+    fi
+
+    local options="🌙  Toggle Night Light (Currently: $status)\n🔵  Enable Night Light\n🔴  Disable Night Light"
+
+    local choice=$(echo -e "$options" | rofi -dmenu -i -p "Night Light" -lines 3 -width 350 -kb-cancel Escape)
+
+    case "$choice" in
+        *Toggle*) toggle_night_light ;;
+        *Enable*) start_night_light ;;
+        *Disable*) stop_night_light ;;
+        *) exit 0 ;;
+    esac
+}
+
+# Main logic
+if [ $# -eq 0 ]; then
+    # No arguments - show menu
+    show_status_menu
+else
+    case "$1" in
+        --toggle|--on|--off)
+            toggle_night_light
+            ;;
+        --enable|--start)
+            start_night_light
+            ;;
+        --disable|--stop)
+            stop_night_light
+            ;;
+        --status)
+            if is_night_light_active; then
+                echo "enabled"
+            else
+                echo "disabled"
+            fi
+            ;;
+        --help)
+            echo "Usage: $0 [OPTION]"
+            echo "Control night light (blue light filter)"
+            echo ""
+            echo "Options:"
+            echo "  --toggle, --on, --off    Toggle night light on/off"
+            echo "  --enable, --start        Enable night light"
+            echo "  --disable, --stop        Disable night light"
+            echo "  --status                  Show current status"
+            echo "  --help                    Show this help"
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo "Use --help for usage information"
+            exit 1
+            ;;
+    esac
+fi

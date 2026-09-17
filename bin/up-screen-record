@@ -1,0 +1,139 @@
+#!/bin/bash
+# Screen Record - Start/stop screen recording with audio options
+# Uses ffmpeg with x11grab for X11 screen capture
+
+set -euo pipefail
+
+# Configuration
+OUTPUT_DIR="$HOME/Videos/Screen Recordings"
+PID_FILE="/tmp/up-screen-record.pid"
+LOG_FILE="/tmp/up-screen-record.log"
+
+# Create output directory if it doesn't exist
+mkdir -p "$OUTPUT_DIR"
+
+# Check if recording is already in progress
+is_recording() {
+    [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null
+}
+
+# Stop current recording
+stop_recording() {
+    if is_recording; then
+        local pid=$(cat "$PID_FILE")
+        kill "$pid" 2>/dev/null || true
+        rm -f "$PID_FILE"
+        notify-send "Screen Recording" "Recording stopped" -u normal
+        return 0
+    else
+        notify-send "Screen Recording" "No active recording to stop" -u normal
+        return 1
+    fi
+}
+
+# Get screen dimensions
+get_screen_size() {
+    # Use xrandr to get primary screen dimensions
+    xrandr | grep -oP '\d+x\d+\+\d+\+\d+' | head -1 | cut -d'+' -f1
+}
+
+# Start recording
+start_recording() {
+    local audio_option="${1:-none}"
+    local screen_size=$(get_screen_size)
+
+    if [ -z "$screen_size" ]; then
+        notify-send "Screen Recording" "Could not detect screen size" -u critical
+        exit 1
+    fi
+
+    # Generate filename with timestamp
+    local timestamp=$(date +%Y%m%d_%H%M%S)
+    local output_file="$OUTPUT_DIR/screen_recording_$timestamp.mp4"
+
+    # Build ffmpeg command
+    local ffmpeg_cmd="ffmpeg -f x11grab -video_size $screen_size -i :0.0"
+
+    case "$audio_option" in
+        "system")
+            # Record system audio (pulseaudio)
+            ffmpeg_cmd="$ffmpeg_cmd -f pulse -i default"
+            ;;
+        "mic")
+            # Record microphone only
+            ffmpeg_cmd="$ffmpeg_cmd -f alsa -i default"
+            ;;
+        "both")
+            # Record both system and microphone (complex - would need audio mixing)
+            ffmpeg_cmd="$ffmpeg_cmd -f pulse -i default"
+            ;;
+        *)
+            # No audio
+            ;;
+    esac
+
+    # Add output options
+    ffmpeg_cmd="$ffmpeg_cmd -c:v libx264 -preset ultrafast -c:a aac -y \"$output_file\""
+
+    # Start recording in background
+    notify-send "Screen Recording" "Recording started: $output_file" -u normal
+
+    # Run ffmpeg and capture PID
+    eval "$ffmpeg_cmd > \"$LOG_FILE\" 2>&1 &"
+    local pid=$!
+    echo $pid > "$PID_FILE"
+
+    # Wait a moment to ensure it started
+    sleep 1
+
+    if ! kill -0 $pid 2>/dev/null; then
+        rm -f "$PID_FILE"
+        local error_msg=$(head -5 "$LOG_FILE" 2>/dev/null || echo "Unknown error")
+        notify-send "Screen Recording" "Failed to start recording: $error_msg" -u critical
+        exit 1
+    fi
+}
+
+# Show recording options menu
+show_options_menu() {
+    local options="📹  Start Recording (no audio)\n🎵  Start Recording (system audio)\n🎤  Start Recording (microphone)\n🎼  Start Recording (system + mic)\n⏹️  Stop Recording"
+
+    local choice=$(echo -e "$options" | rofi -dmenu -i -p "Screen Recording" -lines 5 -width 300 -kb-cancel Escape)
+
+    case "$choice" in
+        *no*audio*) start_recording "none" ;;
+        *system*audio*) start_recording "system" ;;
+        *microphone*) start_recording "mic" ;;
+        *system*mic*) start_recording "both" ;;
+        *Stop*) stop_recording ;;
+        *) exit 0 ;;
+    esac
+}
+
+# Main logic
+if [ $# -eq 0 ]; then
+    # No arguments - show menu if not recording, or stop if recording
+    if is_recording; then
+        stop_recording
+    else
+        show_options_menu
+    fi
+else
+    case "$1" in
+        --stop)
+            stop_recording
+            ;;
+        --start)
+            local audio="${2:-none}"
+            if is_recording; then
+                notify-send "Screen Recording" "Recording already in progress" -u normal
+                exit 1
+            fi
+            start_recording "$audio"
+            ;;
+        *)
+            echo "Usage: $0 [--start [none|system|mic|both]] [--stop]"
+            exit 1
+            ;;
+    esac
+fi

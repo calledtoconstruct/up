@@ -1,0 +1,54 @@
+#!/bin/bash
+# Refresh a single config from system defaults with backup + diff
+# Usage: up-refresh-config <relative-path>
+# Example: up-refresh-config i3/config
+#          up-refresh-config polybar/config.ini
+
+set -euo pipefail
+
+export UP_ROOT="${UP_ROOT:-/usr/local/share/up}"
+
+config_file="${1:-}"
+if [ -z "$config_file" ]; then
+    cat << EOF
+Usage: up-refresh-config <relative-path>
+
+Copies \$UP_ROOT/configs/<path> → ~/.config/<path> (stock live copy).
+Creates a timestamped backup only when the files differ, then shows the diff.
+Does not touch ~/.config/up/overrides or keybindings-overrides.toml.
+
+Examples:
+  up-refresh-config i3/config
+  up-refresh-config polybar/config.ini
+  up-refresh-config polybar/launch.sh
+EOF
+    exit 1
+fi
+
+default_config="$UP_ROOT/configs/$config_file"
+user_config="$HOME/.config/$config_file"
+
+if [ ! -f "$default_config" ]; then
+    echo "Error: default config not found: $default_config" >&2
+    exit 1
+fi
+
+mkdir -p "$(dirname "$user_config")"
+
+if [ -f "$user_config" ]; then
+    if cmp -s "$default_config" "$user_config"; then
+        echo "Unchanged: $user_config (already matches default)"
+        exit 0
+    fi
+    backup="${user_config}.backup-$(date +%Y%m%d-%H%M%S)"
+    cp -p "$user_config" "$backup"
+    cp -p "$default_config" "$user_config"
+    echo "Replaced $user_config with Up default."
+    echo "Backup: $backup"
+    echo ""
+    echo "Changes (new default vs your previous file):"
+    diff -u "$backup" "$user_config" || true
+else
+    cp -p "$default_config" "$user_config"
+    echo "Installed new config: $user_config"
+fi

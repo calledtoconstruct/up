@@ -1,0 +1,73 @@
+# Abundant Earth Theme - Dusty hills, olive groves, harvest dusk
+name = "Abundant Earth"
+
+# ===== STANDARD COLORS - Used by most applications =====
+[colors]
+background = "#1C1812"
+foreground = "#E8DCC8"
+accent = "#D97706"
+urgent = "#C2410C"
+alternate = "#2A241C"
+hover = "#3F3528"
+active = "#A3B15A"
+
+# Normal terminal colors (parchment, olive, burnt orange)
+black = "#1C1812"
+red = "#C2410C"
+green = "#6B7C3A"
+yellow = "#D4A017"
+blue = "#6B7C8A"
+magenta = "#A67C52"
+cyan = "#7A8B6A"
+white = "#E8DCC8"
+
+# Bright terminal colors
+bright_black = "#4A4034"
+bright_red = "#EA580C"
+bright_green = "#8B9A4A"
+bright_yellow = "#E8C547"
+bright_blue = "#8A9BAA"
+bright_magenta = "#C4A06A"
+bright_cyan = "#9AAB7A"
+bright_white = "#F5EDE0"
+
+# ===== APPLICATION-SPECIFIC COLORS =====
+
+[i3]
+bg = "#1C1812"
+fg = "#E8DCC8"
+accent = "#D97706"
+urgent = "#C2410C"
+
+[alacritty]
+primary_bg = "#1C1812"
+primary_fg = "#E8DCC8"
+cursor = "#D97706"
+
+[rofi]
+background = "#1C1812"
+foreground = "#E8DCC8"
+selected = "#D97706"
+urgent = "#C2410C"
+alternate = "#2A241C"
+hover = "#3F3528"
+active = "#A3B15A"
+
+[picom]
+shadow = "#000000"
+shadow_alpha = "0.3"
+
+# ===== GTK =====
+[gtk]
+# Custom theme - generated from colors
+theme_name = "Abundant-Earth"
+# No external package - generated from colors
+
+# ===== BACKGROUND =====
+[background]
+# Custom backgrounds
+directory = "../backgrounds/abundant-earth/dark"
+fallback = "/usr/share/backgrounds/archlinux/landscape.jpg"
+
+[nvim]
+colorscheme = "custom"

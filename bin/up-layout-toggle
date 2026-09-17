@@ -1,0 +1,125 @@
+#!/bin/bash
+# Toggle i3 split orientation (horizontal vs vertical).
+# i3's workspace_layout only accepts default|stacking|tabbed — not h/v.
+# Split direction is default_orientation.
+set -euo pipefail
+
+I3_CONFIG="${HOME}/.config/i3/config"
+
+if [ ! -f "$I3_CONFIG" ]; then
+    echo "Error: i3 config not found" >&2
+    exit 1
+fi
+
+notify() {
+    local title="$1"
+    local message="$2"
+    local urgency="${3:-normal}"
+    if command -v notify-send >/dev/null 2>&1; then
+        notify-send "$title" "$message" -u "$urgency" 2>/dev/null || echo "$title: $message"
+    else
+        echo "$title: $message"
+    fi
+}
+
+get_current_layout() {
+    local line
+    line=$(grep -E '^[[:space:]]*default_orientation[[:space:]]+' "$I3_CONFIG" 2>/dev/null | tail -1 || true)
+    case "$line" in
+        *vertical*)   echo "vertical" ;;
+        *horizontal*) echo "horizontal" ;;
+        *)            echo "horizontal" ;;
+    esac
+}
+
+set_layout() {
+    local layout="$1"
+    case "$layout" in
+        horizontal|vertical) ;;
+        *)
+            echo "Error: layout must be horizontal or vertical" >&2
+            return 1
+            ;;
+    esac
+
+    local temp_config
+    temp_config=$(mktemp)
+    # Drop leftover invalid workspace_layout h/v lines and old orientation
+    sed -e '/^[[:space:]]*workspace_layout[[:space:]]\+\(horizontal\|vertical\)/d' \
+        -e '/^[[:space:]]*default_orientation[[:space:]]/d' \
+        "$I3_CONFIG" > "$temp_config"
+    printf 'default_orientation %s\n' "$layout" >> "$temp_config"
+    mv "$temp_config" "$I3_CONFIG"
+    chmod 644 "$I3_CONFIG" 2>/dev/null || true
+
+    if command -v i3-msg >/dev/null 2>&1; then
+        i3-msg reload >/dev/null 2>&1 || true
+        # Apply to the focused container immediately (reload only affects new splits)
+        if [ "$layout" = "vertical" ]; then
+            i3-msg split v >/dev/null 2>&1 || true
+        else
+            i3-msg split h >/dev/null 2>&1 || true
+        fi
+    fi
+
+    notify "Workspace Layout" "New windows split $layout" "normal"
+}
+
+toggle_layout() {
+    case "$(get_current_layout)" in
+        vertical) set_layout "horizontal" ;;
+        *)        set_layout "vertical" ;;
+    esac
+}
+
+show_layout_menu() {
+    local current
+    current=$(get_current_layout)
+    local options=""
+    if [ "$current" = "horizontal" ]; then
+        options="${options}⬌  Horizontal (Current)\n"
+    else
+        options="${options}⬌  Horizontal\n"
+    fi
+    if [ "$current" = "vertical" ]; then
+        options="${options}⬍  Vertical (Current)\n"
+    else
+        options="${options}⬍  Vertical\n"
+    fi
+
+    local choice
+    choice=$(echo -e "$options" | rofi -dmenu -i -p "Workspace Layout" -lines 2 -width 300 -kb-cancel Escape || true)
+
+    case "$choice" in
+        *Horizontal*) set_layout "horizontal" ;;
+        *Vertical*)   set_layout "vertical" ;;
+        *)            exit 0 ;;
+    esac
+}
+
+if [ $# -eq 0 ]; then
+    show_layout_menu
+else
+    case "$1" in
+        --toggle|--switch) toggle_layout ;;
+        --horizontal|--h)  set_layout "horizontal" ;;
+        --vertical|--v)    set_layout "vertical" ;;
+        --get|--current)   get_current_layout ;;
+        --help)
+            echo "Usage: $0 [OPTION]"
+            echo "Set how i3 splits new windows (default_orientation)."
+            echo ""
+            echo "Options:"
+            echo "  --toggle, --switch    Toggle between layouts"
+            echo "  --horizontal, --h     Split side by side"
+            echo "  --vertical, --v       Split stacked (above/below)"
+            echo "  --get, --current      Show current orientation"
+            echo "  --help                Show this help"
+            ;;
+        *)
+            echo "Unknown option: $1" >&2
+            echo "Use --help for usage information" >&2
+            exit 1
+            ;;
+    esac
+fi

@@ -1,0 +1,10 @@
+{
+  "mcp": {
+    "servers": {
+      "fetch": {
+        "command": "node",
+        "args": ["C:\\Users\\calle\\OneDrive\\Documents\\Cline\\MCP\\fetch-server\\build\\index.js"]
+      }
+    }
+  }
+}

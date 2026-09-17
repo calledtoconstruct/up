@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=Grok
+Comment=Open Grok AI
+Exec=firefox "https://grok.com"
+Terminal=false
+Type=Application
+StartupNotify=true
+StartupWMClass=firefox
+Categories=Network;WebBrowser;

@@ -1,0 +1,33 @@
+#!/bin/bash
+# Block GitHub from receiving the private overlay branch or its files.
+# Install: git config core.hooksPath hooks
+set -euo pipefail
+
+remote="${1:-}"
+url="${2:-}"
+
+is_github=0
+case "$url" in
+    *github.com*) is_github=1 ;;
+esac
+[ "$is_github" = 1 ] || exit 0
+
+zero="0000000000000000000000000000000000000000"
+blocked_paths='^(configs/workflows/|configs/scripts/project-manager/|configs/scripts/packages/|configs/packages/|configs/scripts/usecase-utils\.sh$|bin/up-workflow-launcher$|bin/up-install-packages$|bin/up-validate-packages$|tests/vm/guest-usecase\.sh$|tests/vm/check-workflows-host\.sh$)'
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+    [ -n "${local_ref:-}" ] || continue
+    case "$remote_ref" in
+        refs/heads/usecases|refs/heads/archive/*)
+            echo "pre-push: refusing to push $remote_ref to GitHub" >&2
+            exit 1
+            ;;
+    esac
+    [ "$local_sha" != "$zero" ] || continue
+    if git ls-tree -r --name-only "$local_sha" | grep -E "$blocked_paths" >/dev/null; then
+        echo "pre-push: $local_ref still contains overlay paths; not pushing to GitHub" >&2
+        git ls-tree -r --name-only "$local_sha" | grep -E "$blocked_paths" >&2
+        exit 1
+    fi
+done
+exit 0

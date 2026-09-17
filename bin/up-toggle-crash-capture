@@ -1,0 +1,16 @@
+#!/bin/bash
+# Toggle crash toasts. Presence of ~/.config/up/crash-capture-off disables them.
+set -euo pipefail
+
+flag="$HOME/.config/up/crash-capture-off"
+mkdir -p "$(dirname "$flag")"
+
+if [ -f "$flag" ]; then
+    rm -f "$flag"
+    echo "Crash capture on"
+    systemctl --user start up-crash-watch.service 2>/dev/null || true
+else
+    touch "$flag"
+    echo "Crash capture off"
+    systemctl --user stop up-crash-watch.service 2>/dev/null || true
+fi

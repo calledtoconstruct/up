@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Name=Capture
+Comment=Take screenshots with flameshot
+Exec=flameshot gui
+Terminal=false
+Type=Application
+StartupNotify=true
+Categories=Graphics;Screenshot;

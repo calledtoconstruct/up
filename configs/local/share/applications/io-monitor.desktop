@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=I/O Monitor
+Comment=Monitor disk I/O activity
+Exec=alacritty --class iotop -e iotop
+Terminal=false
+Type=Application
+StartupNotify=true
+StartupWMClass=iotop
+Categories=System;Monitor;

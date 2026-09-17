@@ -1,0 +1,51 @@
+#!/bin/bash
+# Show Keybindings - Display i3 keybindings in a readable format
+# Reads from centralized keybindings.toml configuration
+
+set -euo pipefail
+
+# Get UP_ROOT
+UP_ROOT="${UP_ROOT:-/usr/local/share/up}"
+
+# Source keybinding utilities
+if [ -f "$UP_ROOT/configs/scripts/keybinding-utils.sh" ]; then
+    source "$UP_ROOT/configs/scripts/keybinding-utils.sh"
+else
+    echo "Error: keybinding-utils.sh not found"
+    exit 1
+fi
+
+# Show in a pager or terminal
+show_full_keybindings() {
+    generate_help_text "plain" | less -R
+}
+
+# Show in rofi menu for quick reference
+show_quick_reference() {
+    generate_help_text "rofi" | rofi -dmenu -i -p "Keybindings Reference" -markup-rows -lines 25 -width 800 -kb-cancel Escape
+}
+
+# Main logic
+case "${1:-}" in
+    --full)
+        show_full_keybindings
+        ;;
+    --quick|--menu|"")
+        show_quick_reference
+        ;;
+    --help)
+        echo "Usage: $0 [OPTION]"
+        echo "Show i3 keybindings reference"
+        echo ""
+        echo "Options:"
+        echo "  --full     Show complete keybindings in terminal"
+        echo "  --quick    Show quick reference menu (default)"
+        echo "  --menu     Same as --quick"
+        echo "  --help     Show this help"
+        ;;
+    *)
+        echo "Unknown option: $1"
+        echo "Use --help for usage information"
+        exit 1
+        ;;
+esac

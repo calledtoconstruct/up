@@ -1,0 +1,73 @@
+# Dusken Glade Light Theme - Twilight forest in soft morning light
+name = "Dusken Glade Light"
+
+# ===== STANDARD COLORS - Used by most applications =====
+[colors]
+background = "#F5F5EB"
+foreground = "#1A1F2E"
+accent = "#4A9C6E"
+urgent = "#EF4444"
+alternate = "#EDE9E0"
+hover = "#D1FAE5"
+active = "#10B981"
+
+# Normal terminal colors (forest green-purple tint)
+black = "#1A1F2E"
+red = "#EF4444"
+green = "#4A9C6E"
+yellow = "#B45309"
+blue = "#4338CA"
+magenta = "#8B5CF6"
+cyan = "#14B8A6"
+white = "#475569"
+
+# Bright terminal colors
+bright_black = "#3D4556"
+bright_red = "#F87171"
+bright_green = "#22C55E"
+bright_yellow = "#F59E0B"
+bright_blue = "#6366F1"
+bright_magenta = "#A78BFA"
+bright_cyan = "#2DD4BF"
+bright_white = "#1A1F2E"
+
+# ===== APPLICATION-SPECIFIC COLORS =====
+
+[i3]
+bg = "#F5F5EB"
+fg = "#1A1F2E"
+accent = "#4A9C6E"
+urgent = "#EF4444"
+
+[alacritty]
+primary_bg = "#F5F5EB"
+primary_fg = "#1A1F2E"
+cursor = "#4A9C6E"
+
+[rofi]
+background = "#F5F5EB"
+foreground = "#1A1F2E"
+selected = "#4A9C6E"
+urgent = "#EF4444"
+alternate = "#EDE9E0"
+hover = "#D1FAE5"
+active = "#10B981"
+
+[picom]
+shadow = "#000000"
+shadow_alpha = "0.2"
+
+# ===== GTK =====
+[gtk]
+# Custom theme - generated from colors
+theme_name = "Dusken-Glade-Light"
+# No external package - generated from colors
+
+# ===== BACKGROUND =====
+[background]
+# Custom backgrounds
+directory = "../backgrounds/dusken-glade/light"
+fallback = "/usr/share/backgrounds/archlinux/mountain.jpg"
+
+[nvim]
+colorscheme = "custom"

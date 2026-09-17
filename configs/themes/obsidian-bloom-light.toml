@@ -1,0 +1,73 @@
+# Obsidian Bloom Light Theme - Dark stone crystals in bright polished stone
+name = "Obsidian Bloom Light"
+
+# ===== STANDARD COLORS - Used by most applications =====
+[colors]
+background = "#F8FAFC"
+foreground = "#1E2937"
+accent = "#0E7490"
+urgent = "#F472B6"
+alternate = "#F1F5F9"
+hover = "#E0F2FE"
+active = "#14B8A6"
+
+# Normal terminal colors (luxury cyan-rose tint)
+black = "#1E2937"
+red = "#F472B6"
+green = "#10B981"
+yellow = "#CA8A04"
+blue = "#2563EB"
+magenta = "#DB2777"
+cyan = "#0E7490"
+white = "#475569"
+
+# Bright terminal colors
+bright_black = "#475569"
+bright_red = "#F9A8D4"
+bright_green = "#22C55E"
+bright_yellow = "#EAB308"
+bright_blue = "#3B82F6"
+bright_magenta = "#E879F9"
+bright_cyan = "#14B8A6"
+bright_white = "#1E2937"
+
+# ===== APPLICATION-SPECIFIC COLORS =====
+
+[i3]
+bg = "#F8FAFC"
+fg = "#1E2937"
+accent = "#0E7490"
+urgent = "#F472B6"
+
+[alacritty]
+primary_bg = "#F8FAFC"
+primary_fg = "#1E2937"
+cursor = "#0E7490"
+
+[rofi]
+background = "#F8FAFC"
+foreground = "#1E2937"
+selected = "#0E7490"
+urgent = "#F472B6"
+alternate = "#F1F5F9"
+hover = "#E0F2FE"
+active = "#14B8A6"
+
+[picom]
+shadow = "#000000"
+shadow_alpha = "0.2"
+
+# ===== GTK =====
+[gtk]
+# Custom theme - generated from colors
+theme_name = "Obsidian-Bloom-Light"
+# No external package - generated from colors
+
+# ===== BACKGROUND =====
+[background]
+# Custom backgrounds
+directory = "../backgrounds/obsidian-bloom/light"
+fallback = "/usr/share/backgrounds/archlinux/geowaves.png"
+
+[nvim]
+colorscheme = "custom"

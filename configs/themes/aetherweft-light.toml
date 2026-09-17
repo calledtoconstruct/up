@@ -1,0 +1,73 @@
+# Aetherweft Light Theme - Bright ethereal flowing light threads
+name = "Aetherweft Light"
+
+# ===== STANDARD COLORS - Used by most applications =====
+[colors]
+background = "#F8FAFC"
+foreground = "#1E2937"
+accent = "#06B6D4"
+urgent = "#EF4444"
+alternate = "#F1F5F9"
+hover = "#E2E8F0"
+active = "#0891B2"
+
+# Normal terminal colors (cool-aqua tint on light base)
+black = "#1E2937"
+red = "#EF4444"
+green = "#10B981"
+yellow = "#CA8A04"
+blue = "#2563EB"
+magenta = "#7C3AED"
+cyan = "#06B6D4"
+white = "#475569"
+
+# Bright terminal colors
+bright_black = "#475569"
+bright_red = "#F87171"
+bright_green = "#34D399"
+bright_yellow = "#EAB308"
+bright_blue = "#3B82F6"
+bright_magenta = "#A78BFA"
+bright_cyan = "#22D3EE"
+bright_white = "#1E2937"
+
+# ===== APPLICATION-SPECIFIC COLORS =====
+
+[i3]
+bg = "#F8FAFC"
+fg = "#1E2937"
+accent = "#06B6D4"
+urgent = "#EF4444"
+
+[alacritty]
+primary_bg = "#F8FAFC"
+primary_fg = "#1E2937"
+cursor = "#06B6D4"
+
+[rofi]
+background = "#F8FAFC"
+foreground = "#1E2937"
+selected = "#06B6D4"
+urgent = "#EF4444"
+alternate = "#F1F5F9"
+hover = "#E2E8F0"
+active = "#0891B2"
+
+[picom]
+shadow = "#000000"
+shadow_alpha = "0.2"
+
+# ===== GTK =====
+[gtk]
+# Custom theme - generated from colors
+theme_name = "Aetherweft-Light"
+# No external package - generated from colors
+
+# ===== BACKGROUND =====
+[background]
+# Custom backgrounds
+directory = "../backgrounds/aetherweft/light"
+fallback = "/usr/share/backgrounds/archlinux/geowaves.png"
+
+[nvim]
+colorscheme = "custom"

@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=X-GNOME-Metatheme
+Name={{THEME_NAME}}
+Comment=Auto-generated theme from {{THEME_FILE}}
+Encoding=UTF-8
+
+[X-GNOME-Metatheme]
+GtkTheme={{THEME_NAME}}
+MetacityTheme={{THEME_NAME}}
+IconTheme=Adwaita
+CursorTheme=Adwaita
+CursorSize=24

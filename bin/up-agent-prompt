@@ -1,0 +1,19 @@
+#!/bin/bash
+# Launch the default agent with a task prompt.
+# Usage: up-agent-prompt [--inline] <prompt...>
+set -euo pipefail
+
+export UP_ROOT="${UP_ROOT:-/usr/local/share/up}"
+
+inline=()
+if [ "${1:-}" = "--inline" ]; then
+    inline=(--inline)
+    shift
+fi
+
+if [ $# -eq 0 ]; then
+    echo "Usage: up-agent-prompt [--inline] <prompt...>" >&2
+    exit 1
+fi
+
+exec "$UP_ROOT/bin/up-agent" "${inline[@]}" --prompt "$*"

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=Docker
+Comment=Manage Docker containers
+Exec=alacritty --class docker -e lazydocker
+Terminal=false
+Type=Application
+StartupNotify=true
+StartupWMClass=docker
+Categories=Development;Container;

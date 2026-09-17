@@ -1,0 +1,62 @@
+#!/bin/bash
+# Color Picker - Pick a color from screen and copy to clipboard
+# Uses X11 color picker tools
+
+set -euo pipefail
+
+# Try different color picker tools in order of preference
+pick_color() {
+    # Try gpick first (modern color picker)
+    if command -v gpick >/dev/null 2>&1; then
+        # gpick has a GUI, run it and capture output
+        # Note: gpick outputs selected color to stdout when closed
+        temp_file=$(mktemp)
+        timeout 30 gpick --all > "$temp_file" 2>/dev/null || true
+        color=$(cat "$temp_file" 2>/dev/null || echo "")
+        rm -f "$temp_file"
+
+        if [ -n "$color" ] && [[ "$color" =~ ^#[0-9A-Fa-f]{6}$ ]]; then
+            echo "$color"
+            return 0
+        fi
+    fi
+
+    # Try xcolor (command-line)
+    if command -v xcolor >/dev/null 2>&1; then
+        color=$(timeout 30 xcolor 2>/dev/null || echo "")
+        if [ -n "$color" ] && [[ "$color" =~ ^#[0-9A-Fa-f]{6}$ ]]; then
+            echo "$color"
+            return 0
+        fi
+    fi
+
+    # Final fallback: show error message
+    echo ""
+    return 1
+}
+
+# Main logic
+main() {
+    notify-send "Color Picker" "Click on a color to pick it..." -t 2000
+
+    color=$(pick_color)
+
+    if [ -n "$color" ]; then
+        # Copy to clipboard using xclip
+        if command -v xclip >/dev/null 2>&1; then
+            echo -n "$color" | xclip -selection clipboard
+            echo -n "$color" | xclip -selection primary
+        fi
+
+        # Show notification with color preview
+        notify-send "Color Picked" "$color" -u normal
+
+        # Also print to stdout for debugging
+        echo "$color"
+    else
+        notify-send "Color Picker" "Failed to pick color or operation cancelled" -u normal
+        exit 1
+    fi
+}
+
+main "$@"

@@ -1,0 +1,73 @@
+# Bloom Shadow Theme - Elegant shadowed florals
+name = "Bloom Shadow"
+
+# ===== STANDARD COLORS - Used by most applications =====
+[colors]
+background = "#1A1423"
+foreground = "#F3E8FF"
+accent = "#DB2777"
+urgent = "#E11D48"
+alternate = "#2A2238"
+hover = "#C026D3"
+active = "#E879F9"
+
+# Normal terminal colors (gothic rose-magenta tint)
+black = "#1A1423"
+red = "#E11D48"
+green = "#10B981"
+yellow = "#F59E0B"
+blue = "#8B5CF6"
+magenta = "#C026D3"
+cyan = "#DB2777"
+white = "#F3E8FF"
+
+# Bright terminal colors
+bright_black = "#4C4157"
+bright_red = "#FB7185"
+bright_green = "#34D399"
+bright_yellow = "#FBBF24"
+bright_blue = "#A78BFA"
+bright_magenta = "#E879F9"
+bright_cyan = "#F472B6"
+bright_white = "#FAF5FF"
+
+# ===== APPLICATION-SPECIFIC COLORS =====
+
+[i3]
+bg = "#1A1423"
+fg = "#F3E8FF"
+accent = "#DB2777"
+urgent = "#E11D48"
+
+[alacritty]
+primary_bg = "#1A1423"
+primary_fg = "#F3E8FF"
+cursor = "#DB2777"
+
+[rofi]
+background = "#1A1423"
+foreground = "#F3E8FF"
+selected = "#DB2777"
+urgent = "#E11D48"
+alternate = "#2A2238"
+hover = "#C026D3"
+active = "#E879F9"
+
+[picom]
+shadow = "#000000"
+shadow_alpha = "0.3"
+
+# ===== GTK =====
+[gtk]
+# Custom theme - generated from colors
+theme_name = "Bloom-Shadow"
+# No external package - generated from colors
+
+# ===== BACKGROUND =====
+[background]
+# Custom backgrounds
+directory = "../backgrounds/bloom-shadow/dark"
+fallback = "/usr/share/backgrounds/archlinux/gritty.png"
+
+[nvim]
+colorscheme = "custom"

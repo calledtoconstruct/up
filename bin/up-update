@@ -1,0 +1,431 @@
+#!/bin/bash
+# Up Linux updater — single supported update path
+# Couples git pull + migrations + system packages + config refresh
+# Prefer this over raw pacman -Syu (which skips migrations).
+# Usage: up-update [-y]
+#
+# Safe to run as a normal user: re-execs via sudo using an absolute path
+# (sudo's secure_path does not include /usr/local/share/up/bin).
+
+set -euo pipefail
+
+# --- Resolve this script (works when invoked via PATH or relative path) -----
+_resolve_self() {
+    local src="${BASH_SOURCE[0]:-$0}"
+    if [[ "$src" != /* ]]; then
+        local from_path
+        from_path=$(type -P -- "$src" 2>/dev/null || true)
+        if [ -n "$from_path" ]; then
+            src="$from_path"
+        elif [ -e "$src" ]; then
+            src="$(pwd)/$src"
+        fi
+    fi
+    if command -v readlink >/dev/null 2>&1; then
+        readlink -f "$src" 2>/dev/null || printf '%s\n' "$src"
+    elif command -v realpath >/dev/null 2>&1; then
+        realpath "$src" 2>/dev/null || printf '%s\n' "$src"
+    else
+        printf '%s\n' "$src"
+    fi
+}
+
+SELF="$(_resolve_self)"
+
+# Prefer the system install tree for updates (not a random git checkout)
+# unless the caller explicitly set UP_ROOT.
+if [ -z "${UP_ROOT:-}" ]; then
+    if [ -f /usr/local/share/up/bin/up-update ]; then
+        export UP_ROOT=/usr/local/share/up
+        SELF=/usr/local/share/up/bin/up-update
+    elif [[ "$SELF" == */bin/up-update ]]; then
+        export UP_ROOT="$(cd "$(dirname "$SELF")/.." && pwd)"
+    else
+        export UP_ROOT=/usr/local/share/up
+    fi
+else
+    export UP_ROOT
+    if [ -f "$UP_ROOT/bin/up-update" ]; then
+        SELF="$UP_ROOT/bin/up-update"
+    fi
+fi
+
+if [ ! -d "$UP_ROOT" ]; then
+    echo "Error: Up installation not found at $UP_ROOT" >&2
+    echo "Expected /usr/local/share/up (set UP_ROOT if using a custom location)." >&2
+    exit 1
+fi
+
+if [ ! -x "$SELF" ] && [ -x "$UP_ROOT/bin/up-update" ]; then
+    SELF="$UP_ROOT/bin/up-update"
+fi
+
+if [ ! -f "$SELF" ]; then
+    echo "Error: cannot locate up-update script." >&2
+    echo "  tried: $SELF" >&2
+    echo "  UP_ROOT=$UP_ROOT" >&2
+    exit 1
+fi
+
+# --- Elevate: sudo secure_path cannot see $UP_ROOT/bin -----------------------
+if [ "$(id -u)" -ne 0 ]; then
+    if ! command -v sudo >/dev/null 2>&1; then
+        echo "up-update must run as root, and sudo is not available." >&2
+        exit 1
+    fi
+    # Absolute path is required: `sudo up-update` often fails with
+    # "command not found" because secure_path omits /usr/local/share/up/bin.
+    exec sudo --preserve-env=UP_ROOT "$SELF" "$@"
+fi
+
+# Running as root from here
+AUTO_YES=false
+[[ "${1:-}" == "-y" ]] && AUTO_YES=true
+
+# Original user (for yay, which must not run as root)
+REAL_USER="${SUDO_USER:-}"
+if [ -z "$REAL_USER" ] || [ "$REAL_USER" = "root" ]; then
+    REAL_USER=""
+    for d in /home/*; do
+        [ -d "$d" ] || continue
+        u=$(basename "$d")
+        case "$u" in
+            lost+found) continue ;;
+        esac
+        if id "$u" >/dev/null 2>&1; then
+            REAL_USER="$u"
+            break
+        fi
+    done
+fi
+
+VERSION="unknown"
+[ -f "$UP_ROOT/version" ] && VERSION=$(tr -d '[:space:]' < "$UP_ROOT/version")
+
+echo "=== Up Updater (version $VERSION) ==="
+echo "UP_ROOT=$UP_ROOT"
+echo "Prefer this command over raw pacman -Syu so migrations always run."
+echo ""
+
+if [ "$AUTO_YES" = false ]; then
+    # Need a TTY for confirmation (menu launches in a terminal)
+    if [ -t 0 ]; then
+        read -r -p "Update Up and system packages? [y/N] " ans
+        case "$ans" in
+            [yY]|[yY][eE][sS]) ;;
+            *) echo "Cancelled."; exit 0 ;;
+        esac
+    else
+        echo "No TTY for confirmation; re-run with -y or from an interactive terminal." >&2
+        exit 1
+    fi
+fi
+
+cd "$UP_ROOT"
+
+# Ensure scripts stay executable after pull
+set_script_permissions() {
+    find "$UP_ROOT" -type f \( -name "*.sh" -o -path "*/bin/*" \) -exec chmod +x {} \; 2>/dev/null || true
+}
+
+# Symlink up-* tools into /usr/local/bin so `sudo up-update` works via secure_path
+install_bin_links() {
+    local f base
+    mkdir -p /usr/local/bin
+    for f in "$UP_ROOT"/bin/up-*; do
+        [ -e "$f" ] || continue
+        base=$(basename "$f")
+        ln -sfn "$f" "/usr/local/bin/$base"
+    done
+    if [ -f "$UP_ROOT/configs/sudoers/up-greeter" ]; then
+        install -m 440 "$UP_ROOT/configs/sudoers/up-greeter" /etc/sudoers.d/up-greeter
+    fi
+}
+
+# --- Pre-update config backup ---
+BACKUP_ROOT="/var/lib/up/backups/pre-update-$(date +%Y%m%d-%H%M%S)"
+mkdir -p "$BACKUP_ROOT"
+echo "→ Backing up user configs to $BACKUP_ROOT ..."
+for user_home in /home/*; do
+    [ -d "$user_home" ] || continue
+    username=$(basename "$user_home")
+    if [ -d "$user_home/.config/up" ]; then
+        mkdir -p "$BACKUP_ROOT/$username"
+        cp -a "$user_home/.config/up" "$BACKUP_ROOT/$username/" 2>/dev/null || true
+        for f in i3/config polybar/config.ini picom/config; do
+            if [ -f "$user_home/.config/$f" ]; then
+                mkdir -p "$BACKUP_ROOT/$username/$(dirname "$f")"
+                cp -p "$user_home/.config/$f" "$BACKUP_ROOT/$username/$f" 2>/dev/null || true
+            fi
+        done
+    fi
+done
+
+# --- Git update ---
+# /usr/local/share/up is a vendor checkout, not a user workspace.
+# Local edits and leftover untracked files must not survive an update
+# (stash-pop was putting them back and undoing the pull).
+VENDOR_ROOT="/usr/local/share/up"
+
+echo "→ Pulling latest Up from git..."
+git config --global --add safe.directory "$UP_ROOT" 2>/dev/null || true
+if [ -d "$UP_ROOT/.git" ]; then
+    GIT_TERMINAL_PROMPT=0
+    export GIT_TERMINAL_PROMPT
+    git -C "$UP_ROOT" config core.fileMode false 2>/dev/null || true
+
+    if [ "$UP_ROOT" != "$VENDOR_ROOT" ]; then
+        echo "⚠ $UP_ROOT is not the installed vendor tree ($VENDOR_ROOT)."
+        echo "  Refusing to discard a development checkout. Skipping git update."
+    elif ! git -C "$UP_ROOT" fetch --prune origin; then
+        echo "⚠ git fetch failed (network?). Continuing with the local tree."
+    else
+        if ! git -C "$UP_ROOT" diff --quiet \
+            || ! git -C "$UP_ROOT" diff --cached --quiet \
+            || [ -n "$(git -C "$UP_ROOT" ls-files --others --exclude-standard)" ]; then
+            echo "→ Discarding local changes in $UP_ROOT (vendor tree is not a user workspace)."
+        fi
+        reset_ref=""
+        if git -C "$UP_ROOT" rev-parse --abbrev-ref --symbolic-full-name '@{u}' >/dev/null 2>&1; then
+            reset_ref='@{u}'
+        elif git -C "$UP_ROOT" rev-parse --verify -q origin/main >/dev/null; then
+            reset_ref="origin/main"
+        fi
+        if [ -z "$reset_ref" ]; then
+            echo "⚠ No upstream branch (origin/main). Skipping reset."
+        elif ! git -C "$UP_ROOT" reset --hard "$reset_ref"; then
+            echo "⚠ git reset --hard $reset_ref failed. Continuing with the local tree."
+        else
+            git -C "$UP_ROOT" clean -fd
+            echo "→ Tree matches $reset_ref"
+            # git clean is only this vendor checkout. Sibling dirs under
+            # /usr/local/share/ (including up-addons) are left alone.
+        fi
+        # Drop leftover up-update stashes from the old stash-pop path
+        while IFS= read -r stash_ref; do
+            [ -n "$stash_ref" ] || continue
+            git -C "$UP_ROOT" stash drop "$stash_ref" >/dev/null 2>&1 || true
+        done < <(git -C "$UP_ROOT" stash list | awk -F: '/up-update/{print $1}')
+    fi
+else
+    echo "⚠ $UP_ROOT is not a git checkout; skipping pull."
+fi
+set_script_permissions
+install_bin_links
+
+# PATH profile (login shells) + secure_path-friendly links (sudo)
+if [ ! -f /etc/profile.d/up-path.sh ]; then
+    cat > /etc/profile.d/up-path.sh << 'EOF'
+export UP_ROOT="/usr/local/share/up"
+export PATH="$UP_ROOT/bin:$PATH"
+EOF
+    chmod 644 /etc/profile.d/up-path.sh
+fi
+
+# --- Migrations (skip-and-continue on failure) ---
+MIG_STATE="/var/lib/up/migrations"
+mkdir -p "$MIG_STATE" "$MIG_STATE/skipped"
+echo "→ Running migrations..."
+# shellcheck disable=SC1091
+source "$UP_ROOT/configs/scripts/package-groups.sh" 2>/dev/null || true
+
+shopt -s nullglob
+mig_list=("$UP_ROOT"/migrations/*.sh)
+shopt -u nullglob
+
+if [ ${#mig_list[@]} -eq 0 ]; then
+    echo "   (no migration scripts found)"
+else
+    for mig in "${mig_list[@]}"; do
+        [ -f "$mig" ] || continue
+        mig_num=$(basename "$mig" .sh)
+        if [ -f "$MIG_STATE/${mig_num}.done" ] || [ -f "$MIG_STATE/skipped/${mig_num}.done" ]; then
+            echo "   ✓ $mig_num already applied/skipped"
+            continue
+        fi
+        echo "   → Running $mig_num ..."
+        if bash "$mig"; then
+            touch "$MIG_STATE/${mig_num}.done"
+            echo "   ✅ $mig_num completed"
+        else
+            echo "   ❌ $mig_num failed"
+            if [ "$AUTO_YES" = true ]; then
+                touch "$MIG_STATE/skipped/${mig_num}.done"
+                echo "   → skipped (auto -y)"
+            else
+                read -r -p "   Skip migration and continue? [y/N] " skip
+                case "$skip" in
+                    [yY]*)
+                        touch "$MIG_STATE/skipped/${mig_num}.done"
+                        ;;
+                    *)
+                        echo "Update aborted. Fix the migration and re-run up-update."
+                        exit 1
+                        ;;
+                esac
+            fi
+        fi
+    done
+fi
+
+# --- System packages ---
+echo "→ Updating system packages (pacman -Syu)..."
+if ! pacman -Syu --noconfirm; then
+    echo "⚠ pacman -Syu reported errors — review output above"
+    PACMAN_FAILED=1
+else
+    PACMAN_FAILED=0
+    echo "→ System packages updated"
+fi
+
+# --- AUR (must not run as root) ---
+if command -v yay >/dev/null 2>&1; then
+    if [ -n "$REAL_USER" ] && [ "$REAL_USER" != "root" ]; then
+        echo "→ Updating AUR packages as $REAL_USER (yay)..."
+        if ! sudo -u "$REAL_USER" -- yay -Sua --noconfirm; then
+            echo "⚠ AUR update had errors (non-fatal)"
+        fi
+    else
+        echo "⚠ Skipping AUR update (no non-root user for yay)"
+    fi
+fi
+
+# --- Config refresh for stock files (diff-aware) ---
+CONFIG_FILES=(
+    "i3/config"
+    "polybar/config.ini"
+    "polybar/launch.sh"
+    "picom/config"
+    "picom/rules.conf"
+    "rofi/config.rasi"
+    "dunst/dunstrc"
+    "alacritty/alacritty.toml"
+    "tmux/tmux.conf"
+    "starship.toml"
+)
+
+refresh_stock_file() {
+    local src="$1"
+    local dst="$2"
+    local owner="${3:-}"
+    [ -f "$src" ] || return 0
+    mkdir -p "$(dirname "$dst")"
+    if [ -L "$dst" ]; then
+        rm -f "$dst"
+    fi
+    if [ -f "$dst" ] && cmp -s "$src" "$dst" 2>/dev/null; then
+        return 0
+    fi
+    if [ -f "$dst" ]; then
+        cp -p "$dst" "$dst.backup-update-$(date +%Y%m%d)" 2>/dev/null || true
+    fi
+    rm -f "$dst"
+    cp "$src" "$dst"
+    if [ -n "$owner" ]; then
+        chown "$owner:$owner" "$dst" 2>/dev/null || true
+        chmod u+rw "$dst" 2>/dev/null || true
+    fi
+}
+
+echo "→ Refreshing default configs (backup + overwrite stock copies)..."
+for user_home in /home/*; do
+    [ -d "$user_home" ] || continue
+    username=$(basename "$user_home")
+    [ -f "$user_home/.bashrc" ] || [ -f "$user_home/.zshrc" ] || continue
+
+    for config_file in "${CONFIG_FILES[@]}"; do
+        SRC="$UP_ROOT/configs/$config_file"
+        DST="$user_home/.config/$config_file"
+        [ -f "$SRC" ] || continue
+        mkdir -p "$(dirname "$DST")"
+        # Ensure parent dir is user-owned (root mkdir leaves 755 root:root → permission denied)
+        chown "$username:$username" "$(dirname "$DST")" 2>/dev/null || true
+        chmod u+rwx "$(dirname "$DST")" 2>/dev/null || true
+        if [ -f "$DST" ] && cmp -s "$SRC" "$DST" 2>/dev/null && [ ! -L "$DST" ]; then
+            :
+        else
+            refresh_stock_file "$SRC" "$DST" "$username"
+            [ "$(basename "$DST")" = "launch.sh" ] && chmod 755 "$DST" 2>/dev/null || true
+            echo "   → Updated $username: $config_file"
+        fi
+    done
+
+    if [ -x "$UP_ROOT/configs/scripts/seed-user-overrides.sh" ]; then
+        "$UP_ROOT/configs/scripts/seed-user-overrides.sh" --home "$user_home" || true
+        chown -R "$username:$username" "$user_home/.config/up/overrides" \
+            "$user_home/.config/up/keybindings-overrides.toml" 2>/dev/null || true
+    fi
+
+    # Heal polybar dir permissions (session user must read config.ini)
+    if [ -d "$user_home/.config/polybar" ]; then
+        chown -R "$username:$username" "$user_home/.config/polybar" 2>/dev/null || true
+        chmod u+rwx "$user_home/.config/polybar" 2>/dev/null || true
+        chmod u+rw "$user_home/.config/polybar"/* 2>/dev/null || true
+        chmod 755 "$user_home/.config/polybar/launch.sh" 2>/dev/null || true
+    fi
+
+    if [ ! -f "$user_home/.config/i3/keybindings.conf" ] || [ ! -s "$user_home/.config/i3/keybindings.conf" ]; then
+        # shellcheck disable=SC1091
+        source "$UP_ROOT/configs/scripts/keybinding-utils.sh"
+        if HOME="$user_home" write_i3_keybindings_file "$user_home/.config/i3/keybindings.conf"; then
+            chown "$username:$username" "$user_home/.config/i3/keybindings.conf" 2>/dev/null || true
+            echo "   → Regenerated keybindings for $username"
+        fi
+    fi
+
+    # Seed default rofi theme if missing (colors are regenerated by switch-theme)
+    if [ ! -f "$user_home/.config/rofi/theme.rasi" ] && [ -f "$UP_ROOT/configs/rofi/theme.rasi" ]; then
+        mkdir -p "$user_home/.config/rofi"
+        cp -p "$UP_ROOT/configs/rofi/theme.rasi" "$user_home/.config/rofi/theme.rasi"
+        chown "$username:$username" "$user_home/.config/rofi/theme.rasi" 2>/dev/null || true
+        echo "   → Seeded rofi theme.rasi for $username"
+    fi
+
+    if [ -f "$user_home/.config/up-theme" ]; then
+        CURRENT_THEME=$(cat "$user_home/.config/up-theme")
+        if [ -n "$CURRENT_THEME" ]; then
+            echo "→ Re-applying theme '$CURRENT_THEME' for $username..."
+            # Files only into target home — do not talk to the caller's desktop-agent
+            UP_DESKTOP_INLINE=1 \
+              "$UP_ROOT/configs/scripts/switch-theme.sh" --theme "$CURRENT_THEME" \
+                --home "$user_home" --no-reload \
+              || echo "⚠ Theme re-apply failed for $username (non-critical)"
+            # switch-theme as root can leave ~/.config/polybar/config.ini 600 root:root
+            if [ -d "$user_home/.config/polybar" ]; then
+                chown -R "$username:$username" "$user_home/.config/polybar" 2>/dev/null || true
+                chmod u+rwx "$user_home/.config/polybar" 2>/dev/null || true
+                chmod 644 "$user_home/.config/polybar/config.ini" 2>/dev/null || true
+                chmod 755 "$user_home/.config/polybar/launch.sh" 2>/dev/null || true
+            fi
+            for extra in \
+                "$user_home/.local/state/up" \
+                "$user_home/.local/share/applications" \
+                "$user_home/projects" \
+                "$user_home/financial-backups"
+            do
+                [ -e "$extra" ] || continue
+                chown -R "$username:$username" "$extra" 2>/dev/null || true
+            done
+        fi
+    fi
+done
+
+# Stock system files (copies, not vendor symlinks)
+echo "→ Refreshing system stock files (backup + overwrite)..."
+refresh_stock_file "$UP_ROOT/configs/lightdm/lightdm.conf" /etc/lightdm/lightdm.conf
+# Do not overwrite lightdm-gtk-greeter.conf — it holds the live wallpaper path.
+refresh_stock_file "$UP_ROOT/configs/X11/xsessions/i3-up.desktop" \
+    /usr/share/xsessions/i3-up.desktop
+
+# Refresh bin links after any migration that may have added tools
+install_bin_links
+
+echo ""
+if [ "${PACMAN_FAILED:-0}" -eq 1 ]; then
+    echo "⚠ Update finished with package manager warnings."
+else
+    echo "✅ Update complete!"
+fi
+echo "Config backups under: $BACKUP_ROOT"
+echo "Restart i3 (Super+Ctrl+R) or reboot to apply all changes."
+echo "To refresh one file: up-refresh-config i3/config"

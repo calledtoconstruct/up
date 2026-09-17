@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Name=Install Tools
+Comment=Install developer tools (VS Code, GHCup, etc.)
+Exec=up-install-tools
+Terminal=false
+Type=Application
+StartupNotify=true
+Categories=System;Settings;

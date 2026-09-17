@@ -1,0 +1,137 @@
+#!/bin/bash
+# Display Scale - Toggle between different display scaling factors
+# Uses xrandr to set display scaling
+
+set -euo pipefail
+
+# Check if xrandr is available
+if ! command -v xrandr >/dev/null 2>&1; then
+    echo "Error: xrandr not available"
+    exit 1
+fi
+
+# Safe notification function
+notify() {
+    local title="$1"
+    local message="$2"
+    local urgency="${3:-normal}"
+
+    if command -v notify-send >/dev/null 2>&1; then
+        notify-send "$title" "$message" -u "$urgency" 2>/dev/null || echo "$title: $message"
+    else
+        echo "$title: $message"
+    fi
+}
+
+# Get current display and scaling
+get_current_scale() {
+    # Get primary display
+    local display
+    display=$(xrandr --listmonitors | grep -E "^ [0-9]+:" | head -1 | awk '{print $4}')
+
+    if [ -z "$display" ]; then
+        display=$(xrandr --listactivemonitors | grep -E "^ [0-9]+:" | head -1 | awk '{print $4}')
+    fi
+
+    # Get current scale from xrandr
+    local scale_info
+    scale_info=$(xrandr --verbose | grep -A 10 "^${display} connected" | grep "scaling mode:" | head -1)
+
+    if [[ "$scale_info" =~ scaling\ mode:\ ([0-9\.]+) ]]; then
+        echo "${BASH_REMATCH[1]}"
+    else
+        echo "1.0"  # Default scale
+    fi
+}
+
+# Set display scaling
+set_scale() {
+    local scale="$1"
+    local display
+    display=$(xrandr --listmonitors | grep -E "^ [0-9]+:" | head -1 | awk '{print $4}')
+
+    if [ -z "$display" ]; then
+        display=$(xrandr --listactivemonitors | grep -E "^ [0-9]+:" | head -1 | awk '{print $4}')
+    fi
+
+    if [ -z "$display" ]; then
+        notify "Display Scale" "Could not detect display" "critical"
+        exit 1
+    fi
+
+    # Set scaling
+    xrandr --output "$display" --scale "${scale}x${scale}"
+
+    notify "Display Scale" "Set to ${scale}x scaling" "normal"
+}
+
+# Show scale menu
+show_scale_menu() {
+    local current=$(get_current_scale)
+    local options=""
+
+    # Add checkmark to current scale
+    if [ "$current" = "1.0" ]; then
+        options="${options}🔍  100% (Current)\n"
+    else
+        options="${options}🔍  100%\n"
+    fi
+
+    if [ "$current" = "1.25" ]; then
+        options="${options}🔍  125% (Current)\n"
+    else
+        options="${options}🔍  125%\n"
+    fi
+
+    if [ "$current" = "1.5" ]; then
+        options="${options}🔍  150% (Current)\n"
+    else
+        options="${options}🔍  150%\n"
+    fi
+
+    local choice=$(echo -e "$options" | rofi -dmenu -i -p "Display Scale" -lines 3 -width 300 -kb-cancel Escape)
+
+    case "$choice" in
+        *100%*) set_scale "1.0" ;;
+        *125%*) set_scale "1.25" ;;
+        *150%*) set_scale "1.5" ;;
+        *) exit 0 ;;
+    esac
+}
+
+# Main logic
+if [ $# -eq 0 ]; then
+    # No arguments - show menu
+    show_scale_menu
+else
+    case "$1" in
+        --100|--1.0)
+            set_scale "1.0"
+            ;;
+        --125|--1.25)
+            set_scale "1.25"
+            ;;
+        --150|--1.5)
+            set_scale "1.5"
+            ;;
+        --get|--current)
+            get_current_scale
+            ;;
+        --help)
+            echo "Usage: $0 [OPTION]"
+            echo "Set display scaling factor"
+            echo ""
+            echo "Options:"
+            echo "  --100, --1.0     Set 100% scaling"
+            echo "  --125, --1.25    Set 125% scaling"
+            echo "  --150, --1.5     Set 150% scaling"
+            echo "  --get, --current Show current scaling"
+            echo "  --help           Show this help"
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo "Use --help for usage information"
+            exit 1
+            ;;
+    esac
+fi

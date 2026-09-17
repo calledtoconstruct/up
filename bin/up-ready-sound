@@ -1,0 +1,127 @@
+#!/usr/bin/env bash
+# Toggle the optional session-ready chime (off by default).
+set -euo pipefail
+
+export UP_ROOT="${UP_ROOT:-/usr/local/share/up}"
+CONFIG_FILE="${HOME}/.config/up/config"
+CURTAIN="${UP_ROOT}/configs/scripts/session-curtain.sh"
+
+notify() {
+    local title="$1" message="$2" urgency="${3:-normal}"
+    if command -v notify-send >/dev/null 2>&1; then
+        notify-send "$title" "$message" -u "$urgency" 2>/dev/null || echo "$title: $message"
+    else
+        echo "$title: $message"
+    fi
+}
+
+read_ready_sound() {
+    [ -f "$CONFIG_FILE" ] || { echo "false"; return 0; }
+    grep -E '^[[:space:]]*ready_sound[[:space:]]*=' "$CONFIG_FILE" 2>/dev/null \
+        | head -1 \
+        | sed 's/^[^=]*=[[:space:]]*//' \
+        | tr -d ' "'"'"'"' \
+        | tr 'A-Z' 'a-z' \
+        || echo "false"
+}
+
+is_enabled() {
+    case "$(read_ready_sound)" in
+        1|true|yes|on) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
+set_ready_sound() {
+    local value="$1"
+    mkdir -p "$(dirname "$CONFIG_FILE")"
+    if [ ! -f "$CONFIG_FILE" ]; then
+        printf 'ready_sound = %s\n' "$value" >"$CONFIG_FILE"
+        return 0
+    fi
+    if grep -qE '^[[:space:]]*ready_sound[[:space:]]*=' "$CONFIG_FILE"; then
+        local tmp
+        tmp=$(mktemp)
+        sed -E "s|^[[:space:]]*ready_sound[[:space:]]*=.*|ready_sound = ${value}|" \
+            "$CONFIG_FILE" >"$tmp"
+        mv "$tmp" "$CONFIG_FILE"
+    else
+        [ -s "$CONFIG_FILE" ] && [ "$(tail -c1 "$CONFIG_FILE" | wc -l)" -eq 0 ] \
+            && printf '\n' >>"$CONFIG_FILE"
+        printf 'ready_sound = %s\n' "$value" >>"$CONFIG_FILE"
+    fi
+}
+
+enable_sound() {
+    set_ready_sound true
+    notify "Ready sound" "On — a short chime plays when the desktop is ready" "normal"
+    if [ -x "$CURTAIN" ]; then
+        # Preview so the user hears the same file login will use
+        UP_ROOT="$UP_ROOT" "$CURTAIN" play-sound || true
+    fi
+}
+
+disable_sound() {
+    set_ready_sound false
+    notify "Ready sound" "Off" "normal"
+}
+
+toggle_sound() {
+    if is_enabled; then
+        disable_sound
+    else
+        enable_sound
+    fi
+}
+
+show_menu() {
+    local status="Off"
+    is_enabled && status="On"
+    local options=" Toggle ready sound (currently: ${status})"$'\n'" Enable"$'\n'" Disable"
+    local choice
+    choice=$(printf '%s\n' "$options" | rofi -dmenu -i -p "Ready sound" \
+        -lines 3 -width 400 -kb-cancel Escape || true)
+    case "$choice" in
+        *Toggle*) toggle_sound ;;
+        *Enable*) enable_sound ;;
+        *Disable*) disable_sound ;;
+        *) exit 0 ;;
+    esac
+}
+
+if [ $# -eq 0 ]; then
+    show_menu
+    exit 0
+fi
+
+case "$1" in
+    --toggle) toggle_sound ;;
+    --enable|--on) enable_sound ;;
+    --disable|--off) disable_sound ;;
+    --status)
+        if is_enabled; then echo "enabled"; else echo "disabled"; fi
+        ;;
+    --play)
+        set_ready_sound true
+        [ -x "$CURTAIN" ] && "$CURTAIN" play-sound
+        ;;
+    -h|--help)
+        cat <<'EOF'
+Usage: up-ready-sound [OPTION]
+
+Optional chime when i3 and keybindings are ready (off by default).
+
+  (no args)     Open the toggle menu
+  --toggle      Flip on/off
+  --enable      Turn on (plays a preview)
+  --disable     Turn off
+  --status      Print enabled or disabled
+  --play        Enable and preview the chime
+EOF
+        ;;
+    *)
+        echo "Unknown option: $1" >&2
+        echo "Use --help for usage information" >&2
+        exit 1
+        ;;
+esac

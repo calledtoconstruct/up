@@ -1,0 +1,6 @@
+# Extra / replacement keybindings. Merged after configs/keybindings.toml.
+# up-update never overwrites this file.
+#
+# Example:
+# [bindings]
+# "mod+Shift+x" = "exec firefox"

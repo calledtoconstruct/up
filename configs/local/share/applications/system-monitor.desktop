@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=System Monitor
+Comment=Monitor system resources
+Exec=alacritty --class system-monitor -e btop
+Terminal=false
+Type=Application
+StartupNotify=true
+StartupWMClass=system-monitor
+Categories=System;Monitor;

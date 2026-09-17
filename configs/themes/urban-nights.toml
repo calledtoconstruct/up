@@ -1,0 +1,73 @@
+# Urban Nights Theme - Rain-soaked neon city after dark
+name = "Urban Nights"
+
+# ===== STANDARD COLORS - Used by most applications =====
+[colors]
+background = "#11131C"
+foreground = "#D4DCF5"
+accent = "#22D3EE"
+urgent = "#F472B6"
+alternate = "#1C2030"
+hover = "#334155"
+active = "#818CF8"
+
+# Normal terminal colors (navy, neon cyan, magenta)
+black = "#11131C"
+red = "#F43F5E"
+green = "#34D399"
+yellow = "#FBBF24"
+blue = "#60A5FA"
+magenta = "#E879F9"
+cyan = "#22D3EE"
+white = "#D4DCF5"
+
+# Bright terminal colors
+bright_black = "#3F465C"
+bright_red = "#FB7185"
+bright_green = "#6EE7B7"
+bright_yellow = "#FDE68A"
+bright_blue = "#93C5FD"
+bright_magenta = "#F0ABFC"
+bright_cyan = "#67E8F9"
+bright_white = "#F1F5FF"
+
+# ===== APPLICATION-SPECIFIC COLORS =====
+
+[i3]
+bg = "#11131C"
+fg = "#D4DCF5"
+accent = "#22D3EE"
+urgent = "#F472B6"
+
+[alacritty]
+primary_bg = "#11131C"
+primary_fg = "#D4DCF5"
+cursor = "#22D3EE"
+
+[rofi]
+background = "#11131C"
+foreground = "#D4DCF5"
+selected = "#22D3EE"
+urgent = "#F472B6"
+alternate = "#1C2030"
+hover = "#334155"
+active = "#818CF8"
+
+[picom]
+shadow = "#000000"
+shadow_alpha = "0.3"
+
+# ===== GTK =====
+[gtk]
+# Custom theme - generated from colors
+theme_name = "Urban-Nights"
+# No external package - generated from colors
+
+# ===== BACKGROUND =====
+[background]
+# Custom backgrounds
+directory = "../backgrounds/urban-nights/dark"
+fallback = "/usr/share/backgrounds/archlinux/sunset.jpg"
+
+[nvim]
+colorscheme = "custom"

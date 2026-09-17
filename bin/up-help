@@ -1,0 +1,219 @@
+#!/bin/bash
+# Up Linux Help System
+# Provides searchable help for common tasks and keybindings
+# Reads keybindings from centralized keybindings.toml
+
+set -euo pipefail
+
+# Get UP_ROOT
+UP_ROOT="${UP_ROOT:-/usr/local/share/up}"
+
+# Source keybinding utilities if available
+if [ -f "$UP_ROOT/configs/scripts/keybinding-utils.sh" ]; then
+    source "$UP_ROOT/configs/scripts/keybinding-utils.sh"
+fi
+
+# Help topics (non-keybinding topics)
+declare -A HELP_TOPICS
+
+HELP_TOPICS["themes"]="
+🎨 Theme System
+
+Switch Themes:
+  - Use Super+Shift+G to open theme switcher
+  - Select from 36+ themes
+  - Themes apply to all applications automatically
+
+Theme Components:
+  - i3 window manager colors
+  - Polybar colors and style
+  - Alacritty terminal colors
+  - Rofi launcher theme
+  - Picom compositor effects
+  - GTK application themes
+  - Neovim colorscheme
+  - Starship prompt colors
+
+Custom Themes:
+  - Theme files are in ~/.config/up/themes/
+  - Edit TOML files to customize colors
+  - Run 'up-switch-theme' to apply changes
+
+Live Reload:
+  - Most applications update immediately
+  - Some may need restart (GTK apps)
+  - Config watcher applies changes automatically
+"
+
+HELP_TOPICS["packages"]="
+📦 Package Management
+
+From the system menu (Super+Alt+Space → Install) or the command line:
+
+  up-pkg-install                Official Arch packages (fuzzy pick)
+  up-pkg-aur-install            AUR via yay
+  up-pkg-remove                 Remove an installed package
+  up-install-tools              Extra tools (VS Code, GHCup, …)
+
+Prefer up-update over raw pacman -Syu so migrations still run.
+"
+
+HELP_TOPICS["config"]="
+⚙️  Configuration
+
+User Config File:
+  Location: ~/.config/up/config
+  Format: TOML
+
+Available Options:
+  effects = \"auto\"      # auto|full|lite|safe — compositor profile
+                          # auto detects GPU/virt/RAM and sets fade/blur/dim
+  fade = true/false       # Window fade transitions (materialized by effects)
+  blur = true/false       # Background blur effects (materialized by effects)
+  dim = true/false        # Dim inactive windows (materialized by effects)
+  font = \"Font Name\"    # Terminal/UI font
+  theme = \"theme-name\"  # Current theme
+
+Compositor profile:
+  up-compositor-profile           # show detection + applied settings
+  up-compositor-profile apply --force
+  # Pin: effects = \"full\"|\"lite\"|\"safe\" in ~/.config/up/config
+
+Editing Config:
+  - Edit ~/.config/up/config in your editor
+  - Changes apply automatically when saved
+  - Invalid values are ignored
+
+System Configs:
+  i3 config:     ~/.config/i3/config
+  Polybar:       ~/.config/polybar/config.ini
+  Picom:         ~/.config/picom/config
+  Alacritty:     ~/.config/alacritty/alacritty.toml
+  Starship:      ~/.config/starship.toml
+  Neovim:        ~/.config/nvim/init.lua
+
+Keybindings:
+  Base config:     /usr/local/share/up/configs/keybindings.toml
+  User overrides:  ~/.config/up/keybindings-overrides.toml
+  Use: up-show-keybindings to view all keybindings
+"
+
+HELP_TOPICS["troubleshooting"]="
+🔧 Troubleshooting
+
+Common Issues:
+
+Theme not applying:
+  - Run 'up-switch-theme' to reapply
+  - Check if config watcher is running
+  - Restart i3 with Super+Shift+R
+
+WiFi not connecting:
+  - Use Super+Control+W for WiFi controls
+  - Check if NetworkManager is running
+  - Try: sudo systemctl restart NetworkManager
+
+Audio not working:
+  - Use Super+Control+A for audio controls
+  - Check if PipeWire is running
+  - Try: systemctl --user restart pipewire
+
+Display scaling issues:
+  - Use Super+Control+D to adjust scale
+  - Check monitor settings
+  - Restart i3 with Super+Shift+R
+
+Terminal not starting:
+  - Check if Alacritty is installed
+  - Try: alacritty --config-file ~/.config/alacritty/alacritty.toml
+  - Check logs: journalctl -xe
+
+System running slow:
+  - Check system monitor (Super+Control+O)
+  - Close unused applications
+  - Check for high CPU usage
+
+Get More Help:
+  - Check logs: /var/log/up/install.log
+  - View system info: Super+Control+I
+  - Search forums: https://bbs.archlinux.org
+  - Up Linux docs: /usr/local/share/up/docs/
+"
+
+# Show help for a topic
+show_help() {
+    local topic="${1:-}"
+    
+    if [ -z "$topic" ]; then
+        # Show main menu
+        echo "Up Linux Help System"
+        echo "===================="
+        echo ""
+        echo "Available topics:"
+        echo "  keybindings     - Keyboard shortcuts (from keybindings.toml)"
+        echo "  themes          - Theme system and customization"
+        echo "  packages        - Package management"
+        echo "  config          - Configuration options"
+        echo "  troubleshooting - Common issues and solutions"
+        echo ""
+        echo "Usage: up-help [topic]"
+        echo ""
+        echo "Examples:"
+        echo "  up-help keybindings"
+        echo "  up-help themes"
+        echo "  up-help troubleshooting"
+    elif [ "$topic" = "keybindings" ]; then
+        # Keybindings are generated from centralized keybindings.toml
+        if declare -f generate_help_text >/dev/null 2>&1; then
+            generate_help_text "plain"
+        else
+            echo "Error: keybinding-utils.sh not loaded or generate_help_text not available"
+            echo "Try: up-show-keybindings"
+            exit 1
+        fi
+    else
+        # Show specific topic
+        if [ -n "${HELP_TOPICS[$topic]:-}" ]; then
+            echo "${HELP_TOPICS[$topic]}"
+        else
+            echo "Topic not found: $topic"
+            echo ""
+            echo "Available topics: keybindings themes packages config troubleshooting"
+        fi
+    fi
+}
+
+# Interactive mode using rofi
+show_help_interactive() {
+    local topics=("keybindings" "themes" "packages" "config" "troubleshooting")
+    local topic
+    
+    topic=$(printf '%s\n' "${topics[@]}" | rofi -dmenu -p "Help topic:" -i)
+    
+    if [ -n "$topic" ]; then
+        if [ "$topic" = "keybindings" ]; then
+            # Use the keybinding-utils rofi display
+            if declare -f show_rofi_keybindings >/dev/null 2>&1; then
+                show_rofi_keybindings
+            else
+                # Fallback to plain text in rofi
+                generate_help_text "plain" | rofi -dmenu -p "Keybindings" -i -width 80 -lines 25 -markup-rows
+            fi
+        else
+            # Show topic in a rofi window
+            echo "${HELP_TOPICS[$topic]}" | rofi -dmenu -p "Help: $topic" -i -width 80 -lines 25 -markup-rows
+        fi
+    fi
+}
+
+# Main
+if [ $# -eq 0 ]; then
+    # No arguments - show interactive menu if in graphical session
+    if [ -n "${DISPLAY:-}" ]; then
+        show_help_interactive
+    else
+        show_help
+    fi
+else
+    show_help "$@"
+fi

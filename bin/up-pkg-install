@@ -1,0 +1,38 @@
+#!/bin/bash
+# Install official Arch packages (fuzzy pick, like Omarchy Install > Package).
+# Usage: up-pkg-install [pkg...]
+set -euo pipefail
+
+export UP_ROOT="${UP_ROOT:-/usr/local/share/up}"
+
+if [ $# -gt 0 ]; then
+    exec sudo pacman -S --needed --noconfirm "$@"
+fi
+
+pick_packages() {
+    if command -v fzf >/dev/null 2>&1; then
+        pacman -Slq | fzf --multi \
+            --prompt='Package> ' \
+            --preview 'pacman -Sii {1} 2>/dev/null | head -80' \
+            --preview-window 'down:60%:wrap' \
+            --bind 'alt-p:toggle-preview'
+        return
+    fi
+    if [ -n "${DISPLAY:-}" ] && command -v rofi >/dev/null 2>&1; then
+        rofi -dmenu -i -p "Package name(s)" -kb-cancel Escape
+        return
+    fi
+    read -r -p "Package name(s): " names
+    printf '%s\n' $names
+}
+
+echo "Official Arch packages — tab selects more than one, Enter installs, Esc cancels."
+mapfile -t pkgs < <(pick_packages)
+if [ ${#pkgs[@]} -eq 0 ] || [ -z "${pkgs[0]:-}" ]; then
+    echo "No packages selected."
+    exit 0
+fi
+
+echo "Installing: ${pkgs[*]}"
+sudo pacman -S --needed --noconfirm "${pkgs[@]}"
+echo "Done."

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=Share
+Comment=Share files across devices
+Exec=localsend
+Terminal=false
+Type=Application
+StartupNotify=true
+StartupWMClass=localsend
+Categories=Network;FileTransfer;

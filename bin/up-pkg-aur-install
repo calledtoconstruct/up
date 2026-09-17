@@ -1,0 +1,50 @@
+#!/bin/bash
+# Install AUR packages via yay (fuzzy pick, like Omarchy Install > AUR).
+# Usage: up-pkg-aur-install [pkg...]
+set -euo pipefail
+
+export UP_ROOT="${UP_ROOT:-/usr/local/share/up}"
+
+if ! command -v yay >/dev/null 2>&1; then
+    echo "yay is not installed. AUR install is unavailable." >&2
+    echo "Install yay, then retry: Install > AUR" >&2
+    exit 1
+fi
+
+if [ $# -gt 0 ]; then
+    exec yay -S --needed --noconfirm "$@"
+fi
+
+if [ "$(id -u)" -eq 0 ]; then
+    echo "Do not run AUR installs as root. Use your desktop user (yay)." >&2
+    exit 1
+fi
+
+pick_packages() {
+    if command -v fzf >/dev/null 2>&1; then
+        yay -Slqa | fzf --multi \
+            --prompt='AUR> ' \
+            --preview 'yay -Sia {1} 2>/dev/null | head -80' \
+            --preview-window 'down:60%:wrap' \
+            --bind 'alt-p:toggle-preview'
+        return
+    fi
+    if [ -n "${DISPLAY:-}" ] && command -v rofi >/dev/null 2>&1; then
+        rofi -dmenu -i -p "AUR package name(s)" -kb-cancel Escape
+        return
+    fi
+    read -r -p "AUR package name(s): " names
+    printf '%s\n' $names
+}
+
+echo "AUR packages are community-uploaded (like npm). Review before installing."
+echo "Tab selects more than one, Enter installs, Esc cancels."
+mapfile -t pkgs < <(pick_packages)
+if [ ${#pkgs[@]} -eq 0 ] || [ -z "${pkgs[0]:-}" ]; then
+    echo "No packages selected."
+    exit 0
+fi
+
+echo "Installing: ${pkgs[*]}"
+yay -S --needed --noconfirm "${pkgs[@]}"
+echo "Done."

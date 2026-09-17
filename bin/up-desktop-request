@@ -1,0 +1,9 @@
+#!/bin/bash
+# Enqueue work for the desktop apply agent
+# Usage: up-desktop-request [--wait] <type> [key=value ...]
+# Example: up-desktop-request reapply
+#          up-desktop-request --wait theme name=aetherweft
+
+set -euo pipefail
+export UP_ROOT="${UP_ROOT:-/usr/local/share/up}"
+exec "$UP_ROOT/configs/scripts/desktop-request.sh" "$@"

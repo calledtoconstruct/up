@@ -1,0 +1,73 @@
+# Quartz Pulse Light Theme - Crystalline pulses on clean bright backdrop
+name = "Quartz Pulse Light"
+
+# ===== STANDARD COLORS - Used by most applications =====
+[colors]
+background = "#F0F9FF"
+foreground = "#0C1321"
+accent = "#06B6D4"
+urgent = "#FB7185"
+alternate = "#E0F2FE"
+hover = "#67E8F9"
+active = "#0891B2"
+
+# Normal terminal colors (ice-cyan tint)
+black = "#0C1321"
+red = "#FB7185"
+green = "#10B981"
+yellow = "#CA8A04"
+blue = "#2563EB"
+magenta = "#7C3AED"
+cyan = "#06B6D4"
+white = "#475569"
+
+# Bright terminal colors
+bright_black = "#334155"
+bright_red = "#FDA4AF"
+bright_green = "#22C55E"
+bright_yellow = "#EAB308"
+bright_blue = "#3B82F6"
+bright_magenta = "#A78BFA"
+bright_cyan = "#22D3EE"
+bright_white = "#0C1321"
+
+# ===== APPLICATION-SPECIFIC COLORS =====
+
+[i3]
+bg = "#F0F9FF"
+fg = "#0C1321"
+accent = "#06B6D4"
+urgent = "#FB7185"
+
+[alacritty]
+primary_bg = "#F0F9FF"
+primary_fg = "#0C1321"
+cursor = "#06B6D4"
+
+[rofi]
+background = "#F0F9FF"
+foreground = "#0C1321"
+selected = "#06B6D4"
+urgent = "#FB7185"
+alternate = "#E0F2FE"
+hover = "#67E8F9"
+active = "#0891B2"
+
+[picom]
+shadow = "#000000"
+shadow_alpha = "0.2"
+
+# ===== GTK =====
+[gtk]
+# Custom theme - generated from colors
+theme_name = "Quartz-Pulse-Light"
+# No external package - generated from colors
+
+# ===== BACKGROUND =====
+[background]
+# Custom backgrounds
+directory = "../backgrounds/quartz-pulse/light"
+fallback = "/usr/share/backgrounds/archlinux/geowaves.png"
+
+[nvim]
+colorscheme = "custom"

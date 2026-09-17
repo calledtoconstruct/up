@@ -1,0 +1,33 @@
+#!/bin/bash
+# Switch Theme - Interactive theme selection and application
+# Usage: up-switch-theme [--interactive | --theme <name> | --reapply]
+# Default with no mode flags: open the interactive picker.
+# Uses UP_ROOT environment variable for all path derivations
+
+set -euo pipefail
+
+# Set UP_ROOT to default installation location if not already set
+export UP_ROOT="${UP_ROOT:-/usr/local/share/up}"
+
+# Derive script directory from UP_ROOT
+LIB_DIR="$UP_ROOT/configs/scripts"
+
+# Source theme utilities for theme management functions
+source "$LIB_DIR/theme-utils.sh"
+
+# User-facing CLI defaults to the picker unless a mode flag is given.
+has_mode=false
+for arg in "$@"; do
+    case "$arg" in
+        --theme|--reapply|--interactive|-h|--help)
+            has_mode=true
+            break
+            ;;
+    esac
+done
+if [ "$has_mode" = false ]; then
+    set -- --interactive "$@"
+fi
+
+# Execute the main theme switching script with all arguments
+exec "$LIB_DIR/switch-theme.sh" "$@"

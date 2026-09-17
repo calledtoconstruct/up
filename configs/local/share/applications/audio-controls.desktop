@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=Audio Controls
+Comment=Manage audio settings
+Exec=alacritty --class audio-controls -e pulsemixer
+Terminal=false
+Type=Application
+StartupNotify=true
+StartupWMClass=audio-controls
+Categories=Settings;AudioSettings;

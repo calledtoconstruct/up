@@ -1,0 +1,9 @@
+#!/bin/bash
+# Install Tools Menu - Rofi-based installer for developer tools
+# Usage: up-install-tools
+
+set -euo pipefail
+
+LIB_DIR="/usr/local/share/up/configs/scripts"
+
+exec "$LIB_DIR/install-menu.sh" "$@"

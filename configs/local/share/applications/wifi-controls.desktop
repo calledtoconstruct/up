@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=WiFi Controls
+Comment=Manage network connections
+Exec=alacritty --class wifi-controls -e nmtui
+Terminal=false
+Type=Application
+StartupNotify=true
+StartupWMClass=wifi-controls
+Categories=Settings;NetworkSettings;

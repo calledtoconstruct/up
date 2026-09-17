@@ -1,0 +1,10 @@
+#!/bin/bash
+# Quick Start - Show quick start guide for Up Linux
+# Usage: up-quickstart
+
+set -euo pipefail
+
+export UP_ROOT="${UP_ROOT:-/usr/local/share/up}"
+LIB_DIR="$UP_ROOT/configs/scripts"
+
+exec "$LIB_DIR/quickstart.sh" "$@"

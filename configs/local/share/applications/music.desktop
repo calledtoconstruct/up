@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=Music Player
+Comment=Terminal-based music player
+Exec=alacritty --class music -e cliamp
+Terminal=false
+Type=Application
+StartupNotify=true
+StartupWMClass=music
+Categories=Audio;Player;

@@ -1,0 +1,73 @@
+# Bloom Shadow Light Theme - Elegant shadowed florals in bright diffused light
+name = "Bloom Shadow Light"
+
+# ===== STANDARD COLORS - Used by most applications =====
+[colors]
+background = "#FAF5FF"
+foreground = "#2A1F35"
+accent = "#DB2777"
+urgent = "#E11D48"
+alternate = "#F3E8FF"
+hover = "#FCE7F3"
+active = "#C026D3"
+
+# Normal terminal colors (gothic rose-magenta tint)
+black = "#2A1F35"
+red = "#E11D48"
+green = "#15803D"
+yellow = "#B45309"
+blue = "#4338CA"
+magenta = "#DB2777"
+cyan = "#14B8A6"
+white = "#4B3F35"
+
+# Bright terminal colors
+bright_black = "#5A4A65"
+bright_red = "#FB7185"
+bright_green = "#22C55E"
+bright_yellow = "#F59E0B"
+bright_blue = "#6366F1"
+bright_magenta = "#E879F9"
+bright_cyan = "#2DD4BF"
+bright_white = "#2A1F35"
+
+# ===== APPLICATION-SPECIFIC COLORS =====
+
+[i3]
+bg = "#FAF5FF"
+fg = "#2A1F35"
+accent = "#DB2777"
+urgent = "#E11D48"
+
+[alacritty]
+primary_bg = "#FAF5FF"
+primary_fg = "#2A1F35"
+cursor = "#DB2777"
+
+[rofi]
+background = "#FAF5FF"
+foreground = "#2A1F35"
+selected = "#DB2777"
+urgent = "#E11D48"
+alternate = "#F3E8FF"
+hover = "#FCE7F3"
+active = "#C026D3"
+
+[picom]
+shadow = "#000000"
+shadow_alpha = "0.2"
+
+# ===== GTK =====
+[gtk]
+# Custom theme - generated from colors
+theme_name = "Bloom-Shadow-Light"
+# No external package - generated from colors
+
+# ===== BACKGROUND =====
+[background]
+# Custom backgrounds
+directory = "../backgrounds/bloom-shadow/light"
+fallback = "/usr/share/backgrounds/archlinux/gritty.png"
+
+[nvim]
+colorscheme = "custom"

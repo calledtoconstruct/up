@@ -1,0 +1,73 @@
+# Aetherweft Theme - Ethereal flowing light threads
+name = "Aetherweft"
+
+# ===== STANDARD COLORS - Used by most applications =====
+[colors]
+background = "#0F172A"
+foreground = "#F1F5F9"
+accent = "#67E8F9"
+urgent = "#F87171"
+alternate = "#1E2937"
+hover = "#334155"
+active = "#22D3EE"
+
+# Normal terminal colors (used by alacritty, tmux, etc.)
+black = "#0F172A"
+red = "#F87171"
+green = "#34D399"
+yellow = "#FDE68A"
+blue = "#60A5FA"
+magenta = "#C084FC"
+cyan = "#67E8F9"
+white = "#E2E8F0"
+
+# Bright terminal colors
+bright_black = "#475569"
+bright_red = "#FDA4AF"
+bright_green = "#6EE7B7"
+bright_yellow = "#FEF08C"
+bright_blue = "#93C5FD"
+bright_magenta = "#D8B4FE"
+bright_cyan = "#67E8F9"
+bright_white = "#F1F5F9"
+
+# ===== APPLICATION-SPECIFIC COLORS =====
+
+[i3]
+bg = "#0F172A"
+fg = "#F1F5F9"
+accent = "#67E8F9"
+urgent = "#F87171"
+
+[alacritty]
+primary_bg = "#0F172A"
+primary_fg = "#F1F5F9"
+cursor = "#67E8F9"
+
+[rofi]
+background = "#0F172A"
+foreground = "#F1F5F9"
+selected = "#67E8F9"
+urgent = "#F87171"
+alternate = "#1E2937"
+hover = "#334155"
+active = "#22D3EE"
+
+[picom]
+shadow = "#000000"
+shadow_alpha = "0.3"
+
+# ===== GTK =====
+[gtk]
+# Custom theme - generated from colors
+theme_name = "Aetherweft"
+# No external package - generated from colors
+
+# ===== BACKGROUND =====
+[background]
+# Custom backgrounds
+directory = "../backgrounds/aetherweft/dark"
+fallback = "/usr/share/backgrounds/archlinux/geowaves.png"
+
+[nvim]
+colorscheme = "custom"

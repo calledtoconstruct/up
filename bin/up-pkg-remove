@@ -1,0 +1,35 @@
+#!/bin/bash
+# Remove installed packages (fuzzy pick).
+# Usage: up-pkg-remove [pkg...]
+set -euo pipefail
+
+if [ $# -gt 0 ]; then
+    exec sudo pacman -Rns --noconfirm "$@"
+fi
+
+pick_packages() {
+    if command -v fzf >/dev/null 2>&1; then
+        pacman -Qq | fzf --multi \
+            --prompt='Remove> ' \
+            --preview 'pacman -Qi {1} 2>/dev/null | head -80' \
+            --preview-window 'down:60%:wrap'
+        return
+    fi
+    if [ -n "${DISPLAY:-}" ] && command -v rofi >/dev/null 2>&1; then
+        rofi -dmenu -i -p "Remove package(s)" -kb-cancel Escape
+        return
+    fi
+    read -r -p "Package name(s) to remove: " names
+    printf '%s\n' $names
+}
+
+echo "Installed packages — tab selects more than one, Enter removes, Esc cancels."
+mapfile -t pkgs < <(pick_packages)
+if [ ${#pkgs[@]} -eq 0 ] || [ -z "${pkgs[0]:-}" ]; then
+    echo "No packages selected."
+    exit 0
+fi
+
+echo "Removing: ${pkgs[*]}"
+sudo pacman -Rns --noconfirm "${pkgs[@]}"
+echo "Done."

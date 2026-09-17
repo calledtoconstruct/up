@@ -1,0 +1,155 @@
+#!/bin/bash
+# Power Profile - Switch between power schemes (power-profiles-daemon)
+# Usage: up-power-profile
+#        up-power-profile --performance|--balanced|--power-saver|--get
+
+set -euo pipefail
+
+export UP_ROOT="${UP_ROOT:-/usr/local/share/up}"
+
+notify() {
+    local title="$1"
+    local message="$2"
+    local urgency="${3:-normal}"
+    if command -v notify-send >/dev/null 2>&1; then
+        notify-send -u "$urgency" "$title" "$message" 2>/dev/null || true
+    fi
+    # Always mirror to stderr for logs when not a TTY menu
+    echo "$title: $message" >&2 || true
+}
+
+have_ppd() {
+    command -v powerprofilesctl >/dev/null 2>&1
+}
+
+# List profiles the daemon actually supports (space-separated)
+list_profiles() {
+    if ! have_ppd; then
+        return 1
+    fi
+    # powerprofilesctl list → lines like "  performance:" / "* balanced:"
+    powerprofilesctl list 2>/dev/null \
+        | sed -n 's/^[* ]* \([a-z0-9-]*\):.*/\1/p; s/^\* \([a-z0-9-]*\):.*/\1/p' \
+        | sed 's/^[* ]*//' \
+        | grep -E '^(performance|balanced|power-saver)$' \
+        | sort -u
+}
+
+get_current_profile() {
+    if have_ppd; then
+        powerprofilesctl get 2>/dev/null || echo "unknown"
+    else
+        echo "unavailable"
+    fi
+}
+
+set_power_profile() {
+    local profile="$1"
+    if ! have_ppd; then
+        notify "Power Profile" "power-profiles-daemon is not installed or not on PATH" "critical"
+        return 1
+    fi
+    if ! powerprofilesctl set "$profile" 2>/dev/null; then
+        notify "Power Profile" "Failed to set: $profile (is power-profiles-daemon.service running?)" "critical"
+        return 1
+    fi
+    case "$profile" in
+        performance) notify "Power Profile" "Performance — max CPU, higher power use" "normal" ;;
+        balanced)    notify "Power Profile" "Balanced — default tradeoff" "normal" ;;
+        power-saver) notify "Power Profile" "Power Saver — lower CPU, less power" "normal" ;;
+        *)           notify "Power Profile" "Switched to: $profile" "normal" ;;
+    esac
+}
+
+show_power_menu() {
+    if ! have_ppd; then
+        notify "Power Profile" \
+            "Install power-profiles-daemon and enable the service:
+sudo pacman -S power-profiles-daemon
+sudo systemctl enable --now power-profiles-daemon" \
+            "critical"
+        return 1
+    fi
+
+    # Ensure daemon is usable
+    if ! powerprofilesctl get >/dev/null 2>&1; then
+        notify "Power Profile" \
+            "Cannot talk to power-profiles-daemon. Try:
+sudo systemctl start power-profiles-daemon" \
+            "critical"
+        return 1
+    fi
+
+    local current
+    current=$(get_current_profile)
+
+    local options=""
+    local p label
+    for p in performance balanced power-saver; do
+        case "$p" in
+            performance) label="⚡  Performance" ;;
+            balanced)    label="⚖️  Balanced" ;;
+            power-saver) label="🔋  Power Saver" ;;
+        esac
+        if [ "$p" = "$current" ]; then
+            options="${options}${label} (Current)\n"
+        else
+            options="${options}${label}\n"
+        fi
+    done
+
+    if [ -z "$options" ]; then
+        notify "Power Profile" "No profiles available" "critical"
+        return 1
+    fi
+
+    if ! command -v rofi >/dev/null 2>&1; then
+        notify "Power Profile" "rofi is required for the picker" "critical"
+        return 1
+    fi
+
+    local choice=""
+    # rofi returns non-zero on Escape — do not trip set -e
+    choice=$(printf '%b' "$options" | rofi -dmenu -i -p "Power Profile (now: $current)" \
+        -lines 3 -width 360 -kb-cancel Escape) || true
+
+    if [ -z "$choice" ]; then
+        return 0
+    fi
+
+    case "$choice" in
+        *Performance*) set_power_profile "performance" ;;
+        *Balanced*)    set_power_profile "balanced" ;;
+        *Power*Saver*|*Saver*) set_power_profile "power-saver" ;;
+        *) return 0 ;;
+    esac
+}
+
+# --- main ---
+if [ $# -eq 0 ]; then
+    show_power_menu
+else
+    case "$1" in
+        --performance|--perf) set_power_profile "performance" ;;
+        --balanced|--balance) set_power_profile "balanced" ;;
+        --power-saver|--save|--saver) set_power_profile "power-saver" ;;
+        --get|--current) get_current_profile ;;
+        --list) list_profiles; get_current_profile ;;
+        -h|--help)
+            cat <<EOF
+Usage: up-power-profile [OPTION]
+
+  (no args)                 Interactive rofi picker
+  --performance, --perf     Performance mode
+  --balanced, --balance     Balanced mode
+  --power-saver, --save     Power saver mode
+  --get, --current          Print current profile
+  --list                    List profiles + current
+EOF
+            ;;
+        *)
+            echo "Unknown option: $1 (try --help)" >&2
+            exit 1
+            ;;
+    esac
+fi

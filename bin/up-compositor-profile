@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+# Show or re-apply the hardware-aware picom / compositor profile.
+# Usage:
+#   up-compositor-profile              # show detection + current settings
+#   up-compositor-profile apply        # re-apply (respects effects=)
+#   up-compositor-profile apply --force
+#   up-compositor-profile detect       # print raw detector output
+
+set -euo pipefail
+
+_BIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+export UP_ROOT="${UP_ROOT:-/usr/local/share/up}"
+if [ ! -x "$UP_ROOT/configs/scripts/detect-compositor-capability.sh" ] \
+    && [ -x "$_BIN_DIR/../configs/scripts/detect-compositor-capability.sh" ]; then
+    UP_ROOT="$(cd "$_BIN_DIR/.." && pwd)"
+    export UP_ROOT
+fi
+DETECT="$UP_ROOT/configs/scripts/detect-compositor-capability.sh"
+APPLY="$UP_ROOT/configs/scripts/apply-compositor-profile.sh"
+CONFIG="${HOME}/.config/up/config"
+CACHE="${HOME}/.config/up/compositor-capability"
+CAP="${HOME}/.config/picom/capability.conf"
+
+cmd="${1:-show}"
+shift || true
+
+case "$cmd" in
+    detect)
+        exec "$DETECT" "$@"
+        ;;
+    apply)
+        exec "$APPLY" "$@"
+        ;;
+    show|status|"")
+        echo "=== Compositor capability ==="
+        echo "Config: $CONFIG"
+        if [ -f "$CONFIG" ]; then
+            grep -E '^[[:space:]]*(effects|fade|blur|dim)[[:space:]]*=' "$CONFIG" 2>/dev/null || true
+        else
+            echo "(no user config yet)"
+        fi
+        echo ""
+        echo "--- Detection ---"
+        "$DETECT"
+        echo ""
+        if [ -f "$CACHE" ]; then
+            echo "--- Last applied cache ---"
+            cat "$CACHE"
+            echo ""
+        fi
+        if [ -f "$CAP" ]; then
+            echo "--- capability.conf ---"
+            cat "$CAP"
+        fi
+        echo ""
+        echo "Pin a profile: edit effects = \"auto\"|\"full\"|\"lite\"|\"safe\" in ~/.config/up/config"
+        echo "Re-apply:      up-compositor-profile apply --force"
+        ;;
+    -h|--help|help)
+        cat <<'EOF'
+Usage: up-compositor-profile [show|detect|apply] [options]
+
+  show (default)  Detection result + current config/cache
+  detect          Raw detector KEY=value output (--json supported)
+  apply           Run apply-compositor-profile.sh (--force, --dry-run, ...)
+
+effects in ~/.config/up/config:
+  auto  — detect GPU/virt/RAM and set fade/blur/dim (default)
+  full  — glx + blur + fade + dim
+  lite  — no blur; fade/dim on
+  safe  — xrender; all heavy effects off
+EOF
+        ;;
+    *)
+        echo "Unknown command: $cmd (try: show|detect|apply)" >&2
+        exit 2
+        ;;
+esac

@@ -1,0 +1,73 @@
+# Emberforge Core Theme - Warm metallic forge glows
+name = "Emberforge Core"
+
+# ===== STANDARD COLORS - Used by most applications =====
+[colors]
+background = "#1F130A"
+foreground = "#F5EDE4"
+accent = "#E07A5F"
+urgent = "#EF4444"
+alternate = "#2E1F14"
+hover = "#F4A261"
+active = "#FB923C"
+
+# Normal terminal colors (warm ember tint)
+black = "#1F130A"
+red = "#EF4444"
+green = "#84CC16"
+yellow = "#F4A261"
+blue = "#D97706"
+magenta = "#C2410C"
+cyan = "#FB923C"
+white = "#F5EDE4"
+
+# Bright terminal colors
+bright_black = "#443724"
+bright_red = "#F87171"
+bright_green = "#A3E635"
+bright_yellow = "#FBBF24"
+bright_blue = "#F59E0B"
+bright_magenta = "#EA580C"
+bright_cyan = "#FDBA74"
+bright_white = "#FEF3C7"
+
+# ===== APPLICATION-SPECIFIC COLORS =====
+
+[i3]
+bg = "#1F130A"
+fg = "#F5EDE4"
+accent = "#E07A5F"
+urgent = "#EF4444"
+
+[alacritty]
+primary_bg = "#1F130A"
+primary_fg = "#F5EDE4"
+cursor = "#E07A5F"
+
+[rofi]
+background = "#1F130A"
+foreground = "#F5EDE4"
+selected = "#E07A5F"
+urgent = "#EF4444"
+alternate = "#2E1F14"
+hover = "#F4A261"
+active = "#FB923C"
+
+[picom]
+shadow = "#000000"
+shadow_alpha = "0.3"
+
+# ===== GTK =====
+[gtk]
+# Custom theme - generated from colors
+theme_name = "Emberforge-Core"
+# No external package - generated from colors
+
+# ===== BACKGROUND =====
+[background]
+# Custom backgrounds
+directory = "../backgrounds/emberforge-core/dark"
+fallback = "/usr/share/backgrounds/archlinux/gritty.png"
+
+[nvim]
+colorscheme = "custom"

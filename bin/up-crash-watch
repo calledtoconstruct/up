@@ -1,0 +1,64 @@
+#!/bin/bash
+# Watch systemd-coredump and toast a diagnosis offer.
+set -uo pipefail
+
+export UP_ROOT="${UP_ROOT:-/usr/local/share/up}"
+readonly COREDUMP_MESSAGE_ID=fc2e22bc6ee647b6b90729ab34a250b1
+dedupe_seconds=${UP_CRASH_DEDUPE_SECONDS:-60}
+MUTE="${UP_CRASH_MUTE:-$HOME/.config/up/crash-mute}"
+OFF="${HOME}/.config/up/crash-capture-off"
+
+declare -A last_notified
+
+muted() {
+    local name="$1"
+    [ -f "$MUTE" ] || return 1
+    grep -Fxq "$name" "$MUTE"
+}
+
+announce() {
+    local comm=$1 pid=$2 exe=$3 signal=$4
+    local body="Click Diagnose, or: up-agent-crash $pid"
+    if command -v dunstify >/dev/null 2>&1; then
+        local act
+        act=$(dunstify -u critical -A diagnose,Diagnose \
+            "Process crashed: $comm" "$body") || true
+        if [ "$act" = diagnose ]; then
+            "$UP_ROOT/bin/up-agent-crash" "$pid" "$comm" "$exe" "$signal" &
+        fi
+        return
+    fi
+    notify-send -u critical "Process crashed: $comm" "$body" 2>/dev/null || true
+}
+
+[ -f "$OFF" ] && exit 0
+
+journalctl -f -n 0 -o json "MESSAGE_ID=$COREDUMP_MESSAGE_ID" 2>/dev/null |
+    while IFS= read -r entry; do
+        [ -f "$OFF" ] && continue
+        IFS=$'\t' read -r uid comm pid exe signal < <(
+            jq -r 'def field: if . == null or . == "" then "-" else . end;
+                   [(._UID | field),
+                    (.COREDUMP_COMM | field),
+                    (.COREDUMP_PID | field),
+                    (.COREDUMP_EXE | field),
+                    (.COREDUMP_SIGNAL_NAME | field)] | @tsv' <<<"$entry" 2>/dev/null
+        )
+        [[ "$pid" =~ ^[0-9]+$ ]] || continue
+        agent=$("$UP_ROOT/bin/up-default-agent" | tr -d '\n' || true)
+        [ -n "$agent" ] || continue
+        [[ "$uid" =~ ^[0-9]+$ ]] || continue
+        [ "$uid" = "${UID:-}" ] || continue
+
+        name=$comm
+        [[ "$exe" == /* ]] && name=${exe##*/}
+        muted "$name" && continue
+
+        now=$(date +%s)
+        last=${last_notified[$name]:-0}
+        if [ $((now - last)) -lt "$dedupe_seconds" ]; then
+            continue
+        fi
+        last_notified[$name]=$now
+        announce "$comm" "$pid" "$exe" "$signal"
+    done

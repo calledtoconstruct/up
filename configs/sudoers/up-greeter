@@ -1,0 +1,5 @@
+# Theme/background tools may set the LightDM wallpaper without a password.
+%up ALL=(root) NOPASSWD: /usr/local/bin/up-set-greeter-background
+%up ALL=(root) NOPASSWD: /usr/local/share/up/bin/up-set-greeter-background
+%up ALL=(root) NOPASSWD: /usr/local/bin/up-set-greeter-background *
+%up ALL=(root) NOPASSWD: /usr/local/share/up/bin/up-set-greeter-background *

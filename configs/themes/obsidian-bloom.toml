@@ -1,0 +1,73 @@
+# Obsidian Bloom Theme - Dark stone with crystal blooms
+name = "Obsidian Bloom"
+
+# ===== STANDARD COLORS - Used by most applications =====
+[colors]
+background = "#0F0F15"
+foreground = "#CBD5E1"
+accent = "#7DD3FC"
+urgent = "#F472B6"
+alternate = "#1C1C2A"
+hover = "#F472B6"
+active = "#BAE6FD"
+
+# Normal terminal colors (luxury cyan-rose tint)
+black = "#0F0F15"
+red = "#F472B6"
+green = "#34D399"
+yellow = "#FDE68A"
+blue = "#7DD3FC"
+magenta = "#C084FC"
+cyan = "#7DD3FC"
+white = "#CBD5E1"
+
+# Bright terminal colors
+bright_black = "#374151"
+bright_red = "#F9A8D4"
+bright_green = "#6EE7B7"
+bright_yellow = "#FEF08A"
+bright_blue = "#BAE6FD"
+bright_magenta = "#D8B4FE"
+bright_cyan = "#A5F3FC"
+bright_white = "#F1F5F9"
+
+# ===== APPLICATION-SPECIFIC COLORS =====
+
+[i3]
+bg = "#0F0F15"
+fg = "#CBD5E1"
+accent = "#7DD3FC"
+urgent = "#F472B6"
+
+[alacritty]
+primary_bg = "#0F0F15"
+primary_fg = "#CBD5E1"
+cursor = "#7DD3FC"
+
+[rofi]
+background = "#0F0F15"
+foreground = "#CBD5E1"
+selected = "#7DD3FC"
+urgent = "#F472B6"
+alternate = "#1C1C2A"
+hover = "#F472B6"
+active = "#BAE6FD"
+
+[picom]
+shadow = "#000000"
+shadow_alpha = "0.3"
+
+# ===== GTK =====
+[gtk]
+# Custom theme - generated from colors
+theme_name = "Obsidian-Bloom"
+# No external package - generated from colors
+
+# ===== BACKGROUND =====
+[background]
+# Custom backgrounds
+directory = "../backgrounds/obsidian-bloom/dark"
+fallback = "/usr/share/backgrounds/archlinux/geowaves.png"
+
+[nvim]
+colorscheme = "custom"

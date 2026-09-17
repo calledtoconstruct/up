@@ -1,0 +1,162 @@
+# Up Linux Keybinding Configuration
+# Single source of truth for all keybindings
+# This file is read by:
+# - i3 config (via keybinding-utils.sh)
+# - up-show-keybindings
+# - up-help
+#
+# User overrides: ~/.config/up/keybindings-overrides.toml
+
+# ============================================================================
+# Variables
+# ============================================================================
+[variables]
+mod = "Mod4"
+term = "alacritty"
+menu = "rofi -show drun"
+browser = "firefox"
+
+# ============================================================================
+# Basic Keybindings
+# ============================================================================
+[basic]
+"Super+Return" = { desc = "Open terminal", command = "$term" }
+"Super+w" = { desc = "Close window", command = "kill" }
+
+# ============================================================================
+# Media Keys (Hardware)
+# ============================================================================
+[media]
+"XF86AudioRaiseVolume" = { desc = "Raise volume", command = "pactl set-sink-volume @DEFAULT_SINK@ +10%" }
+"XF86AudioLowerVolume" = { desc = "Lower volume", command = "pactl set-sink-volume @DEFAULT_SINK@ -10%" }
+"XF86AudioMute" = { desc = "Toggle mute", command = "pactl set-sink-mute @DEFAULT_SINK@ toggle" }
+"XF86AudioMicMute" = { desc = "Toggle mic mute", command = "pactl set-source-mute @DEFAULT_SOURCE@ toggle" }
+
+# ============================================================================
+# Navigation (Arrow Keys)
+# ============================================================================
+[navigation]
+"Super+Left" = { desc = "Focus left", command = "focus left" }
+"Super+Down" = { desc = "Focus down", command = "focus down" }
+"Super+Up" = { desc = "Focus up", command = "focus up" }
+"Super+Right" = { desc = "Focus right", command = "focus right" }
+"Super+Shift+Left" = { desc = "Move window left", command = "move left" }
+"Super+Shift+Down" = { desc = "Move window down", command = "move down" }
+"Super+Shift+Up" = { desc = "Move window up", command = "move up" }
+"Super+Shift+Right" = { desc = "Move window right", command = "move right" }
+
+# ============================================================================
+# Layout Controls
+# ============================================================================
+[layout]
+"Super+j" = { desc = "Toggle split layout", command = "layout toggle split" }
+"Super+h" = { desc = "Split horizontal", command = "split h" }
+"Super+v" = { desc = "Split vertical", command = "split v" }
+"Super+f" = { desc = "Toggle fullscreen", command = "fullscreen toggle" }
+"Super+Mod1+s" = { desc = "Stacked layout", command = "layout stacking" }
+"Super+Mod1+w" = { desc = "Tabbed layout", command = "layout tabbed" }
+"Super+Mod1+e" = { desc = "Toggle split", command = "layout toggle split" }
+"Super+Mod1+f" = { desc = "Toggle floating", command = "floating toggle" }
+"Super+Control+f" = { desc = "Focus mode toggle", command = "focus mode_toggle" }
+
+# ============================================================================
+# Workspaces
+# ============================================================================
+[workspaces]
+"Super+1" = { desc = "Switch to workspace 1", command = "workspace number 1" }
+"Super+2" = { desc = "Switch to workspace 2", command = "workspace number 2" }
+"Super+3" = { desc = "Switch to workspace 3", command = "workspace number 3" }
+"Super+4" = { desc = "Switch to workspace 4", command = "workspace number 4" }
+"Super+5" = { desc = "Switch to workspace 5", command = "workspace number 5" }
+"Super+6" = { desc = "Switch to workspace 6", command = "workspace number 6" }
+"Super+7" = { desc = "Switch to workspace 7", command = "workspace number 7" }
+"Super+8" = { desc = "Switch to workspace 8", command = "workspace number 8" }
+"Super+9" = { desc = "Switch to workspace 9", command = "workspace number 9" }
+"Super+0" = { desc = "Switch to workspace 10", command = "workspace number 10" }
+"Super+Shift+1" = { desc = "Move to workspace 1", command = "move container to workspace number 1" }
+"Super+Shift+2" = { desc = "Move to workspace 2", command = "move container to workspace number 2" }
+"Super+Shift+3" = { desc = "Move to workspace 3", command = "move container to workspace number 3" }
+"Super+Shift+4" = { desc = "Move to workspace 4", command = "move container to workspace number 4" }
+"Super+Shift+5" = { desc = "Move to workspace 5", command = "move container to workspace number 5" }
+"Super+Shift+6" = { desc = "Move to workspace 6", command = "move container to workspace number 6" }
+"Super+Shift+7" = { desc = "Move to workspace 7", command = "move container to workspace number 7" }
+"Super+Shift+8" = { desc = "Move to workspace 8", command = "move container to workspace number 8" }
+"Super+Shift+9" = { desc = "Move to workspace 9", command = "move container to workspace number 9" }
+"Super+Shift+0" = { desc = "Move to workspace 10", command = "move container to workspace number 10" }
+
+# ============================================================================
+# Resize Mode
+# ============================================================================
+[resize_mode]
+"Super+r" = { desc = "Enter resize mode", command = "mode \"resize\"" }
+
+# Resize mode internal keybindings (mode-specific, no $mod prefix)
+"j" = { mode = "resize", desc = "Shrink width", command = "resize shrink width 10 px or 10 ppt" }
+"k" = { mode = "resize", desc = "Grow height", command = "resize grow height 10 px or 10 ppt" }
+"l" = { mode = "resize", desc = "Shrink height", command = "resize shrink height 10 px or 10 ppt" }
+";" = { mode = "resize", desc = "Grow width", command = "resize grow width 10 px or 10 ppt" }
+"Left" = { mode = "resize", desc = "Shrink width", command = "resize shrink width 10 px or 10 ppt" }
+"Down" = { mode = "resize", desc = "Grow height", command = "resize grow height 10 px or 10 ppt" }
+"Up" = { mode = "resize", desc = "Shrink height", command = "resize shrink height 10 px or 10 ppt" }
+"Right" = { mode = "resize", desc = "Grow width", command = "resize grow width 10 px or 10 ppt" }
+"Return" = { mode = "resize", desc = "Exit resize mode", command = "mode \"default\"" }
+"Escape" = { mode = "resize", desc = "Exit resize mode", command = "mode \"default\"" }
+"Super+r" = { mode = "resize", desc = "Exit resize mode", command = "mode \"default\"" }
+
+# ============================================================================
+# Application Launcher
+# ============================================================================
+[launcher]
+"Super+Space" = { desc = "Application launcher", command = "$menu" }
+
+# ============================================================================
+# User Applications (Super+Shift)
+# ============================================================================
+[user_apps]
+"Super+Shift+A" = { desc = "Open Grok AI", command = "dex ~/.local/share/applications/grok.desktop" }
+"Super+Shift+Control+A" = { desc = "Launch default coding agent", command = "up-agent --pick" }
+"Super+Shift+B" = { desc = "Open browser", command = "dex ~/.local/share/applications/browser.desktop" }
+"Super+Shift+C" = { desc = "Open calculator", command = "dex ~/.local/share/applications/calculator.desktop" }
+"Super+Shift+D" = { desc = "Open Docker", command = "dex ~/.local/share/applications/docker.desktop" }
+"Super+Shift+E" = { desc = "Open editor", command = "$term -e i3-sensible-editor" }
+"Super+Shift+F" = { desc = "Open file manager", command = "dex ~/.local/share/applications/file-manager.desktop" }
+"Super+Shift+G" = { desc = "Switch theme", command = "/usr/local/share/up/configs/scripts/switch-theme.sh --interactive" }
+"Super+Shift+H" = { desc = "Quickstart guide", command = "/usr/local/share/up/configs/scripts/quickstart.sh" }
+"Super+Shift+M" = { desc = "Open music player", command = "dex ~/.local/share/applications/music.desktop" }
+"Super+Shift+O" = { desc = "Open Obsidian", command = "obsidian -disable-gpu" }
+"Super+Shift+X" = { desc = "Open X applications", command = "dex ~/.local/share/applications/x.desktop" }
+
+# ============================================================================
+# System Functions (Super+Ctrl)
+# ============================================================================
+[system_functions]
+"Super+Control+A" = { desc = "Audio controls", command = "dex ~/.local/share/applications/audio-controls.desktop" }
+"Super+Control+B" = { desc = "Bluetooth controls", command = "dex ~/.local/share/applications/bluetooth-controls.desktop" }
+"Super+Control+C" = { desc = "Screenshot capture", command = "dex ~/.local/share/applications/capture.desktop" }
+"Super+Control+D" = { desc = "Display scale", command = "/usr/local/bin/up-display-scale" }
+"Super+Control+I" = { desc = "System information", command = "dex ~/.local/share/applications/system-information.desktop" }
+"Super+Control+K" = { desc = "Idle lock", command = "/usr/local/bin/up-idle-lock" }
+"Super+Control+L" = { desc = "Layout toggle", command = "/usr/local/bin/up-layout-toggle" }
+"Super+Control+M" = { desc = "I/O monitor", command = "dex ~/.local/share/applications/io-monitor.desktop" }
+"Super+Control+N" = { desc = "Night light", command = "/usr/local/bin/up-night-light" }
+"Super+Control+O" = { desc = "System monitor", command = "dex ~/.local/share/applications/system-monitor.desktop" }
+"Super+Control+P" = { desc = "Power profile", command = "/usr/local/bin/up-power-profile" }
+"Super+Control+Q" = { desc = "Exit confirmation", command = "i3-nagbar -t warning -m 'Do you really want to exit?' -B 'Yes' 'i3-msg exit'" }
+"Super+Control+R" = { desc = "Restart i3", command = "restart" }
+"Super+Control+S" = { desc = "Share files", command = "dex ~/.local/share/applications/share.desktop" }
+"Super+Control+T" = { desc = "System monitor", command = "dex ~/.local/share/applications/system-monitor.desktop" }
+"Super+Control+W" = { desc = "WiFi controls", command = "dex ~/.local/share/applications/wifi-controls.desktop" }
+
+# ============================================================================
+# System Menu
+# ============================================================================
+[system_menu]
+"Super+Alt+Space" = { desc = "Open system menu", command = "/usr/local/share/up/configs/scripts/system-menu.sh" }
+
+# ============================================================================
+# Additional Functions
+# ============================================================================
+[additional]
+"Super+Control+Mod1+R" = { desc = "Reload i3", command = "reload" }
+"Super+Control+Shift+C" = { desc = "Color picker", command = "/usr/local/bin/up-color-picker" }
+"Control+Mod1+Delete" = { desc = "Exit i3", command = "i3-nagbar -t warning -m 'Do you really want to exit?' -B 'Yes' 'i3-msg exit'" }
