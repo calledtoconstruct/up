@@ -34,7 +34,7 @@ if [ -f "$FLAG_FILE" ]; then
 fi
 
 # Show welcome notification
-notify-send "Welcome to Up Linux!" "Run 'up-quickstart' to set up your system, or press Super+Alt+Space for the system menu." -t 10000
+notify-send "Welcome to Up Linux!" "Run 'up-quickstart' to set up your system, or press Super+Space for the system menu." -t 10000
 
 # Check WiFi connection
 if ! nmcli -t -f WIFI general | grep -q "enabled"; then
@@ -63,7 +63,7 @@ Use `yad` or `zenity` for a graphical welcome panel:
 show_welcome_panel() {
     if command -v yad >/dev/null 2>&1; then
         yad --title="Welcome to Up Linux" \
-            --text="<b>Welcome to Up Linux!</b>\n\nHere are some quick tips:\n\n• Press <b>Super+Space</b> to open the application menu\n• Press <b>Super+Alt+Space</b> to open the system menu\n• Run <b>up-quickstart</b> to set up your system\n• Run <b>up-show-keybindings</b> to see all shortcuts\n\nEnjoy your new desktop!" \
+            --text="<b>Welcome to Up Linux!</b>\n\nHere are some quick tips:\n\n• Press <b>Super+Space</b> to open the system menu\n• Press <b>Super+Alt+Space</b> to open the application menu\n• Run <b>up-quickstart</b> to set up your system\n• Run <b>up-show-keybindings</b> to see all shortcuts\n\nEnjoy your new desktop!" \
             --button="Got it!":0 \
             --center \
             --width=400 \
@@ -73,11 +73,11 @@ show_welcome_panel() {
     elif command -v zenity >/dev/null 2>&1; then
         zenity --info \
             --title="Welcome to Up Linux" \
-            --text="<b>Welcome to Up Linux!</b>\n\nHere are some quick tips:\n\n• Press <b>Super+Space</b> to open the application menu\n• Press <b>Super+Alt+Space</b> to open the system menu\n• Run <b>up-quickstart</b> to set up your system\n• Run <b>up-show-keybindings</b> to see all shortcuts\n\nEnjoy your new desktop!" \
+            --text="<b>Welcome to Up Linux!</b>\n\nHere are some quick tips:\n\n• Press <b>Super+Space</b> to open the system menu\n• Press <b>Super+Alt+Space</b> to open the application menu\n• Run <b>up-quickstart</b> to set up your system\n• Run <b>up-show-keybindings</b> to see all shortcuts\n\nEnjoy your new desktop!" \
             --width=400
     else
         # Fallback to notification
-        notify-send "Welcome to Up Linux!" "Press Super+Alt+Space for system menu. Run up-quickstart to get started." -t 10000
+        notify-send "Welcome to Up Linux!" "Press Super+Space for system menu. Run up-quickstart to get started." -t 10000
     fi
 }
 ```
@@ -167,8 +167,8 @@ show_keybinding_overlay() {
     local bindings="
 <b>Essential Keybindings</b>
 
-<b>Super+Space</b>        Open application menu
-<b>Super+Alt+Space</b>    Open system menu
+<b>Super+Space</b>        Open system menu
+<b>Super+Alt+Space</b>    Open application menu
 <b>Super+Return</b>       Open terminal
 <b>Super+W</b>            Close window
 <b>Super+1-0</b>          Switch workspace
@@ -261,8 +261,8 @@ Window Management:
   Super+H/J/K/L        Focus left/down/up/right
   Super+Shift+H/J/K/L  Move window left/down/up/right
   Super+F              Toggle fullscreen
-  Super+Space          Open application menu
-  Super+Alt+Space      Open system menu
+  Super+Space          Open system menu
+  Super+Alt+Space      Open application menu
 
 Workspaces:
   Super+1-0            Switch to workspace 1-10

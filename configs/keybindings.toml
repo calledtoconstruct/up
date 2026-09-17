@@ -107,7 +107,7 @@ browser = "firefox"
 # Application Launcher
 # ============================================================================
 [launcher]
-"Super+Space" = { desc = "Application launcher", command = "$menu" }
+"Super+Alt+Space" = { desc = "Application launcher", command = "$menu" }
 
 # ============================================================================
 # User Applications (Super+Shift)
@@ -151,7 +151,7 @@ browser = "firefox"
 # System Menu
 # ============================================================================
 [system_menu]
-"Super+Alt+Space" = { desc = "Open system menu", command = "/usr/local/share/up/configs/scripts/system-menu.sh" }
+"Super+Space" = { desc = "Open system menu", command = "/usr/local/share/up/configs/scripts/system-menu.sh" }
 
 # ============================================================================
 # Additional Functions

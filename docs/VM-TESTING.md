@@ -351,8 +351,8 @@ cat /var/log/up/install-report.txt 2>/dev/null | head -40
 | Test | Expected |
 |------|----------|
 | `Super + Return` | Alacritty terminal |
-| `Super + Space` | Application launcher (rofi) |
-| `Super + Alt + Space` | System menu |
+| `Super + Alt + Space` | Application launcher (rofi) |
+| `Super + Space` | System menu |
 | Polybar | Bar along the top (or configured edge) |
 | Theme | `up-switch-theme` or Super+Shift+G |
 | Quick start | `up-quickstart` |
@@ -414,7 +414,7 @@ virsh snapshot-revert up-test clean-before-update
 ## Step 10 — Clean up when finished
 
 ```bash
-# Shut down the guest from inside: Super+Alt+Space → Power → Shutdown
+# Shut down the guest from inside: Super+Space → Power → Shutdown
 # Or force from host:
 virsh destroy up-test          # force power off
 virsh undefine up-test --nvram # remove VM definition (keep or delete disk)

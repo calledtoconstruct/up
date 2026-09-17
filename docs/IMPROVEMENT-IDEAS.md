@@ -272,7 +272,7 @@ These are the most common actions and should be accessible with minimal navigati
 
 ### 2.4 System Menu Keyboard Shortcut
 
-**Current State:** System menu is bound to `Super+Alt+Space` which is not intuitive.
+**Current State:** System menu is bound to `Super+Space` (same as Omarchy).
 
 **Recommendations:**
 - Add `Super+?` or `Super+/` as alternative binding (more discoverable)
@@ -281,7 +281,7 @@ These are the most common actions and should be accessible with minimal navigati
 - Show the shortcut in the first-boot welcome wizard
 
 > **YOUR NOTES:**
-> *The system menu will remain on Super+Alt+Space.*
+> *The system menu is on Super+Space.*
 > *Polybar already has an icon for the system menu.*
 
 ---
@@ -406,7 +406,7 @@ These are the most common actions and should be accessible with minimal navigati
 **Recommendations:**
 - Show keybindings overlay (Super+? or Super+H)
 - Prompt to run `up-quickstart` if not already done
-- Show system menu shortcut (Super+Alt+Space)
+- Show system menu shortcut (Super+Space)
 - Offer to connect to WiFi if not connected
 - Show a floating welcome panel with essential shortcuts
 

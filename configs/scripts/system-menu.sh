@@ -1,6 +1,6 @@
 #!/bin/bash
 # System menu — verb-first like Omarchy's "Go" menu.
-# Super+Alt+Space
+# Super+Space
 set -euo pipefail
 
 export UP_ROOT="${UP_ROOT:-/usr/local/share/up}"

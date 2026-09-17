@@ -246,7 +246,7 @@ reveal() {
     if have_cmd notify-send; then
         notify-send -u low -t 2500 \
             "Desktop ready" \
-            "Super+Return opens a terminal. Super+Alt+Space opens the menu." \
+            "Super+Return opens a terminal. Super+Space opens the menu." \
             2>/dev/null || true
     fi
     play_sound

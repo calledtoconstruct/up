@@ -417,7 +417,7 @@ Multiple processes communicate via filesystem:
 
 ## Desktop menus
 
-**System menu (`up-system-menu` / Super+Alt+Space):**
+**System menu (`up-system-menu` / Super+Space):**
 - Verb-first top level: Apps, Learn, Capture, Style, Setup, Install, Update, Session, System
 - Implementation: `configs/scripts/system-menu.sh` + `rofi-menu.sh` + `menu-addons.sh`
 - Install offers official packages (`up-pkg-install`), AUR (`up-pkg-aur-install`), extra tools, and remove
@@ -429,4 +429,4 @@ Optional fragments may exist at `/usr/local/share/up-addons/*/menu.sh`. The OS s
 
 End-user skills ship in `default/agents/skills/` (`up`, `diagnose-crash`) and are symlinked into `~/.agents/skills` and the usual harness skill dirs on install and `up-update`. The default agent name lives in `~/.config/up/config` as `agent = "…"`. `up-agent`, `up-agent-prompt`, and `up-agent-crash` launch it. A user unit `up-crash-watch` toasts coredumps when an agent is set. Contributor instructions for this git tree are in `AGENTS.md`, not in the end-user skill.
 
-**Rofi/drun (Super+Space):** desktop files under `~/.local/share/applications` and `/usr/local/share/applications`.
+**Rofi/drun (Super+Alt+Space):** desktop files under `~/.local/share/applications` and `/usr/local/share/applications`.

@@ -128,8 +128,8 @@ sudo up-update             # supported system/config update path
 | Check | How |
 |-------|-----|
 | Terminal opens | `Super + Return` |
-| App launcher | `Super + Space` |
-| System menu | `Super + Alt + Space` |
+| App launcher | `Super + Alt + Space` |
+| System menu | `Super + Space` |
 | Polybar visible | Top of screen |
 | Network | Polybar / Super+Ctrl+W |
 
@@ -181,8 +181,8 @@ Packages are installed in order of importance, with different failure handling:
 
 | Keybinding | Action |
 |------------|--------|
-| `Super + Alt + Space` | System menu (Go). **Install → Package** adds any Arch app; **Install → AUR** uses yay |
-| `Super + Space` | Application launcher (rofi) |
+| `Super + Space` | System menu (Go). **Install → Package** adds any Arch app; **Install → AUR** uses yay |
+| `Super + Alt + Space` | Application launcher (rofi) |
 | `Super + Shift + G` | Theme switcher |
 | `Super + Ctrl + R` | Restart i3 |
 | `Super + Enter` | Terminal (Alacritty) |
@@ -201,7 +201,7 @@ Packages are installed in order of importance, with different failure handling:
 | `Super + Ctrl + Q` | Quit i3 |
 | `Super + Ctrl + S` | File sharing |
 | `Super + Ctrl + W` | WiFi controls |
-| `Super + Alt + Space` | System menu |
+| `Super + Space` | System menu |
 
 ## Configuration
 

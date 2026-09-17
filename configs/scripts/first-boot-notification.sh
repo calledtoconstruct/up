@@ -40,7 +40,7 @@ if command -v dunstify >/dev/null 2>&1; then
         -A "keybindings=Keybindings" \
         "Welcome to Up Linux!" \
         "Essential shortcuts:
-📋 System Menu: Super+Alt+Space
+📋 System Menu: Super+Space
 💻 Terminal: Super+Return
 🌐 Browser: Super+Shift+B
 ⌨️ Keybindings: Super+Shift+K
@@ -62,7 +62,7 @@ Run up-quickstart or open the system menu to explore." 2>/dev/null || echo "dism
 else
     notify-send -u critical -t 30000 \
         "Welcome to Up Linux!" \
-        "System Menu: Super+Alt+Space
+        "System Menu: Super+Space
 Terminal: Super+Return
 Run: up-quickstart" 2>/dev/null || true
 fi

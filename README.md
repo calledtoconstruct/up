@@ -15,11 +15,11 @@ Up Linux is an opinionated Arch Linux distribution for older hardware and a smal
 - **Migrations.** Updates with rollback-friendly numbered scripts
 - **Desktop tools.** Application launcher and a system menu for install, style, session, power
 
-### System menu (Super + Alt + Space)
+### System menu (Super + Space)
 
 ```
 Go
-├── Apps          Super+Space launcher
+├── Apps          Super+Alt+Space launcher
 ├── Learn         Keybindings, quick start, help
 ├── Capture       Screenshot, record, color picker
 ├── Style         Theme, background, font

@@ -12,8 +12,8 @@ Up Linux Quick Start
 ====================
 
 Essential shortcuts
-  Super + Space          Application launcher (rofi)
-  Super + Alt + Space    System menu
+  Super + Space          System menu
+  Super + Alt + Space    Application launcher (rofi)
   Super + Return         Terminal (Alacritty)
   Super + Shift + B      Web browser
   Super + Shift + G      Theme switcher
@@ -24,7 +24,7 @@ First steps
   1. Connect to WiFi (if needed):
        Super + Ctrl + W   or   nmtui
   2. Open the system menu:
-       Super + Alt + Space
+       Super + Space
   3. Browse keybindings:
        up-show-keybindings
   4. Change theme:

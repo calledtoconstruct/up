@@ -48,7 +48,7 @@ Live Reload:
 HELP_TOPICS["packages"]="
 📦 Package Management
 
-From the system menu (Super+Alt+Space → Install) or the command line:
+From the system menu (Super+Space → Install) or the command line:
 
   up-pkg-install                Official Arch packages (fuzzy pick)
   up-pkg-aur-install            AUR via yay
