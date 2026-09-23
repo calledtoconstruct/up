@@ -129,9 +129,11 @@ up-desktop-request --wait reapply
 
 ### Polybar colors do not change when switching themes
 
-**Cause:** `launch.sh` took a lock on an open file descriptor and left that descriptor open in polybar. The bar held the lock until it exited, so the next theme change waited, gave up, and the old process kept the previous colors.
+**Cause:**
+1. `launch.sh` left its lock open inside polybar, so the next theme change could not replace the process.
+2. Super+Ctrl+R is i3 `restart`. i3 does not run plain `exec` lines on restart, so the bar only redraws and keeps the colors it parsed at login.
 
-**Fix:** Update Up (the bar no longer inherits the lock, and a leftover holder is stopped). Verify colors were written:
+**Fix:** Update Up (`exec_always` re-runs `launch.sh` on reload and restart; the bar does not inherit the lock). Verify colors were written:
 
 ```bash
 grep -A5 '^\[colors\]' ~/.config/polybar/config.ini

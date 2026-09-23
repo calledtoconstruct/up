@@ -43,10 +43,10 @@ exec --no-startup-id /usr/local/share/up/configs/scripts/desktop-agent.sh
 # Config watcher only enqueues sync requests to the agent
 exec --no-startup-id /usr/local/share/up/configs/scripts/config-watcher.sh
 
-# Start the bar once. exec_always would run launch.sh again on every i3
-# reload (theme switch) and race a second polybar. Theme apply / the
-# agent restart the bar when colors change; agent starts it if missing.
-exec --no-startup-id /usr/local/share/up/configs/polybar/launch.sh
+# exec does not run on i3 restart (Super+Ctrl+R) or reload. The bar would
+# stay up, redraw, and keep the colors it parsed at login. exec_always
+# re-runs launch.sh; the script's lock keeps a single bar.
+exec_always --no-startup-id /usr/local/share/up/configs/polybar/launch.sh
 
 # Start notification daemon (dunst)
 exec --no-startup-id dunst

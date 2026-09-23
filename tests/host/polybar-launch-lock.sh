@@ -56,6 +56,14 @@ fail=0
 ok() { printf 'OK  %s\n' "$1"; }
 bad() { printf 'FAIL %s\n' "$1"; fail=1; }
 
+# i3 restart/reload does not re-run plain exec. The bar would redraw and
+# keep the colors it parsed at login.
+if grep -q 'exec_always --no-startup-id .*/polybar/launch.sh' "$ROOT/configs/i3/config"; then
+    ok "i3 restarts polybar on reload and restart"
+else
+    bad "i3 config does not exec_always polybar/launch.sh"
+fi
+
 launch() {
     env -u DISPLAY UP_POLYBAR_QUICK=1 \
         HOME="$HOME" XDG_RUNTIME_DIR="$XDG_RUNTIME_DIR" \
