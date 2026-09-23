@@ -218,7 +218,7 @@ handle_menu_choice() {
             ;;
         capture)
             case "$choice" in
-                *Screenshot*)    run_command flameshot gui; menu_done ;;
+                *Screenshot*)    run_command "$UP_ROOT/configs/scripts/screenshot.sh"; menu_done ;;
                 *Screen*Record*) run_command up-screen-record; menu_done ;;
                 *Color*)         run_command up-color-picker; menu_done ;;
             esac

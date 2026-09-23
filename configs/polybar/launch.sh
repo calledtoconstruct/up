@@ -100,10 +100,26 @@ resolve_config() {
 mkdir -p "$(dirname "$LOCK")" 2>/dev/null || true
 
 exec 9>"$LOCK"
-if ! flock -w 8 9; then
-    log_msg "could not acquire lock"
-    # Another launcher is in charge — do not start a second bar
-    exit 0
+# A live launcher holds this only for the length of the script. If it is
+# still busy after a couple of seconds, a previous polybar inherited fd 9
+# and will keep the lock (and the old colors) until it exits.
+if ! flock -w 2 9; then
+    log_msg "lock busy; stopping polybar that may still hold it"
+    pkill -u "$UID_NUM" -x polybar 2>/dev/null || true
+    _i=0
+    while [ "$_i" -lt 15 ]; do
+        pgrep -u "$UID_NUM" -x polybar >/dev/null 2>&1 || break
+        _i=$((_i + 1))
+        sleep 0.1
+    done
+    unset _i
+    pkill -9 -u "$UID_NUM" -x polybar 2>/dev/null || true
+    sleep 0.1
+    if ! flock -w 2 9; then
+        log_msg "could not acquire lock"
+        exit 1
+    fi
+    log_msg "acquired lock after stopping leftover polybar"
 fi
 
 stop_polybar() {
@@ -169,7 +185,9 @@ if [ ! -r "$CONFIG" ]; then
     exit 1
 fi
 
-polybar -c "$CONFIG" "$BAR_NAME" >>"$LOG" 2>&1 &
+# Do not let polybar inherit fd 9. Otherwise the flock stays held for the
+# life of the bar and the next theme launch cannot re-exec it.
+polybar -c "$CONFIG" "$BAR_NAME" >>"$LOG" 2>&1 9>&- &
 polybar_pid=$!
 disown "$polybar_pid" 2>/dev/null || true
 

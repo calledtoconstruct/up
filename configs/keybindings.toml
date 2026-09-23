@@ -132,7 +132,7 @@ browser = "firefox"
 [system_functions]
 "Super+Control+A" = { desc = "Audio controls", command = "dex ~/.local/share/applications/audio-controls.desktop" }
 "Super+Control+B" = { desc = "Bluetooth controls", command = "dex ~/.local/share/applications/bluetooth-controls.desktop" }
-"Super+Control+C" = { desc = "Screenshot capture", command = "dex ~/.local/share/applications/capture.desktop" }
+"Super+Control+C" = { desc = "Screenshot capture", command = "/usr/local/share/up/configs/scripts/screenshot.sh" }
 "Super+Control+D" = { desc = "Display scale", command = "/usr/local/bin/up-display-scale" }
 "Super+Control+I" = { desc = "System information", command = "dex ~/.local/share/applications/system-information.desktop" }
 "Super+Control+K" = { desc = "Idle lock", command = "/usr/local/bin/up-idle-lock" }

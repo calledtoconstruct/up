@@ -129,9 +129,9 @@ up-desktop-request --wait reapply
 
 ### Polybar colors do not change when switching themes
 
-**Cause:** Relying on `polybar-msg cmd restart` alone often keeps stale colors; the bar must re-exec and re-read `~/.config/polybar/config.ini`.
+**Cause:** `launch.sh` took a lock on an open file descriptor and left that descriptor open in polybar. The bar held the lock until it exited, so the next theme change waited, gave up, and the old process kept the previous colors.
 
-**Fix:** Update Up (launch always re-execs under lock). Verify colors were written:
+**Fix:** Update Up (the bar no longer inherits the lock, and a leftover holder is stopped). Verify colors were written:
 
 ```bash
 grep -A5 '^\[colors\]' ~/.config/polybar/config.ini
@@ -231,6 +231,19 @@ cat ~/.config/up/compositor-capability
 - **Return to detection:** `effects = "auto"` then `up-compositor-profile apply --force`.
 - NVIDIA + glx may set `xrender-sync-fence = true` in `capability.conf`; if the screen still glitches, try `effects = "safe"` (xrender, no blur).
 - `fade` / `blur` / `dim` are **materialized by the profile** when `effects` is `auto`/`full`/`lite`/`safe` — editing them alone while `effects = "auto"` will be overwritten on next apply.
+
+### Screenshot fails (“Unable to capture screen” / portal)
+
+**Cause:** Flameshot 13+ takes screenshots through the XDG desktop portal. i3 on X11 has no portal screenshot backend, so `flameshot gui` exits with `Could not locate the org.freedesktop.portal.Desktop service` or `Unable to capture screen`.
+
+**Fix:** Update Up. Capture uses `configs/scripts/screenshot.sh`, which sets `useX11LegacyScreenshot=true` in `~/.config/flameshot/flameshot.ini` and restarts a running flameshot. By hand:
+
+```bash
+mkdir -p ~/.config/flameshot
+printf '%s\n' '[General]' 'useX11LegacyScreenshot=true' >> ~/.config/flameshot/flameshot.ini
+pkill -x flameshot
+flameshot gui
+```
 
 ### No keybindings
 

@@ -416,6 +416,12 @@ HOME="/home/$USERNAME" UP_INSTALL=1 UP_DESKTOP_INLINE=1 \
   "$UP_ROOT/configs/scripts/switch-theme.sh" --theme aetherweft --no-reload --home "/home/$USERNAME" \
   || log_warn "Default theme generation failed (non-fatal)"
 
+# Flameshot 13+ needs the legacy X11 capture path on i3 (no screenshot portal).
+if [ -x "$UP_ROOT/configs/scripts/screenshot.sh" ]; then
+  HOME="/home/$USERNAME" "$UP_ROOT/configs/scripts/screenshot.sh" --ensure-config \
+    || log_warn "flameshot X11 capture setting failed (non-fatal)"
+fi
+
 # Copy desktop files
 mkdir -p "/home/$USERNAME/.local/share/applications"
 if [ -d "$CONFIG_DIR/local/share/applications" ]; then

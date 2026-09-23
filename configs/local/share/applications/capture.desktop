@@ -2,7 +2,7 @@
 Version=1.0
 Name=Capture
 Comment=Take screenshots with flameshot
-Exec=flameshot gui
+Exec=/usr/local/share/up/configs/scripts/screenshot.sh
 Terminal=false
 Type=Application
 StartupNotify=true
