@@ -122,6 +122,24 @@ if ! flock -w 2 9; then
     log_msg "acquired lock after stopping leftover polybar"
 fi
 
+# Theme apply sets this, then reloads i3. That reload runs this script via
+# exec_always while i3 is still inside the reload. Restarting the bar from
+# there either nests i3-msg (and never reaches the kill) or races a second
+# launch.sh after the reload returns. The theme script restarts the bar
+# once reload has finished, with UP_POLYBAR_FORCE=1.
+if [ "${UP_POLYBAR_FORCE:-0}" != 1 ]; then
+    _defer="${XDG_RUNTIME_DIR:-/tmp}/polybar-launch-defer-${UID_NUM}"
+    if [ -f "$_defer" ]; then
+        _until=$(tr -d '[:space:]' <"$_defer" 2>/dev/null || true)
+        _now=$(date +%s 2>/dev/null || echo 0)
+        if [ -n "${_until}" ] && [ "${_now}" -lt "${_until}" ] 2>/dev/null; then
+            log_msg "skip; theme reload owns the single bar restart"
+            exit 0
+        fi
+    fi
+    unset _defer _until _now
+fi
+
 stop_polybar() {
     # Kill and wait — polybar-msg restart/quit leaves stale colors in-process.
     pkill -u "$UID_NUM" -x polybar 2>/dev/null || true

@@ -364,7 +364,7 @@ restart_polybar_once() {
         launcher="$HOME/.config/polybar/launch.sh"
     fi
     if [ -n "$launcher" ]; then
-        UP_POLYBAR_QUICK=1 \
+        UP_POLYBAR_QUICK=1 UP_POLYBAR_FORCE=1 \
             DISPLAY="${DISPLAY:-:0}" "$launcher" \
             >>"${XDG_RUNTIME_DIR:-/tmp}/polybar-${UID:-$(id -u)}.log" 2>&1 || true
     fi
@@ -1739,14 +1739,17 @@ elif [ -n "${HOME_OVERRIDE:-}" ] || [ -n "${UP_INSTALL:-}" ] \
     || { [ -z "${DISPLAY:-}" ] && [ -z "${WAYLAND_DISPLAY:-}" ]; }; then
     echo "→ Theme files written (offline/install path; no live desktop reload)"
 elif is_graphical_session; then
-    # i3 reload runs exec_always polybar/launch.sh, which is the one bar
-    # restart. A second launch.sh here kills that bar and starts another.
+    # exec_always starts launch.sh during the reload, before i3 answers.
+    # That copy must not kill the bar. This script restarts it once, after.
+    printf '%s\n' "$(($(date +%s) + 4))" \
+        >"${XDG_RUNTIME_DIR:-/tmp}/polybar-launch-defer-${UID:-$(id -u)}"
     reload_i3_if_running || true
     wait_for_i3_ipc || true
+    restart_polybar_once || true
     if [ "${_theme_hold_watch:-0}" = 1 ]; then
         desktop_watch_suppress_end || true
     fi
-    echo "→ Reloaded i3 (polybar re-execs from exec_always)"
+    echo "→ Reloaded i3 and restarted polybar"
 else
     echo "→ Theme files written (no graphical session)"
 fi

@@ -64,21 +64,24 @@ else
     bad "i3 config does not exec_always polybar/launch.sh"
 fi
 
-# Theme apply reloads i3, and that exec_always is the one bar restart.
+# During i3 reload, exec_always must not be the copy that kills the bar.
+# The theme script restarts it once after reload returns.
 theme_live=$(awk '
     /elif is_graphical_session; then/ { grab=1 }
     grab { print }
     /Theme files written \(no graphical session\)/ { grab=0 }
 ' "$ROOT/configs/scripts/switch-theme.sh")
-if printf '%s\n' "$theme_live" | grep -q 'reload_i3_if_running' \
-    && ! printf '%s\n' "$theme_live" | grep -q 'restart_polybar_once'; then
-    ok "theme reload does not start polybar a second time"
+if printf '%s\n' "$theme_live" | grep -q 'polybar-launch-defer' \
+    && printf '%s\n' "$theme_live" | grep -q 'reload_i3_if_running' \
+    && printf '%s\n' "$theme_live" | grep -q 'restart_polybar_once'; then
+    ok "theme reload defers exec_always and restarts polybar once after"
 else
-    bad "theme path still restarts polybar on top of i3 reload"
+    bad "theme path does not defer the in-reload bar restart"
 fi
 
 launch() {
     env -u DISPLAY UP_POLYBAR_QUICK=1 \
+        UP_POLYBAR_FORCE="${UP_POLYBAR_FORCE:-0}" \
         HOME="$HOME" XDG_RUNTIME_DIR="$XDG_RUNTIME_DIR" \
         PATH="$PATH" POLYBAR_TEST_LOCK="$LOCK" \
         POLYBAR_TEST_RECORD="$RECORD" \
@@ -103,7 +106,26 @@ else
     bad "launch lock still held by the running bar"
 fi
 
+live_pid=$(awk '/^closed / { print $2; exit }' "$RECORD")
+printf '%s\n' "$(($(date +%s) + 30))" \
+    >"$XDG_RUNTIME_DIR/polybar-launch-defer-${UID_NUM}"
 : >"$RECORD"
+UP_POLYBAR_FORCE=0 launch || bad "deferred launch failed"
+if [ ! -s "$RECORD" ] && [ -n "$live_pid" ] && kill -0 "$live_pid" 2>/dev/null; then
+    ok "defer stamp leaves the running bar alone"
+else
+    bad "defer stamp restarted or killed the bar"
+fi
+UP_POLYBAR_FORCE=1 launch || bad "forced launch failed"
+unset UP_POLYBAR_FORCE
+if awk '/^closed / { found=1 } END { exit !found }' "$RECORD"; then
+    ok "forced launch replaces the bar after a defer stamp"
+else
+    bad "forced launch did not start a new bar"
+fi
+
+: >"$RECORD"
+rm -f "$XDG_RUNTIME_DIR/polybar-launch-defer-${UID_NUM}"
 pkill -u "$UID_NUM" -x polybar >/dev/null 2>&1 || true
 sleep 0.2
 

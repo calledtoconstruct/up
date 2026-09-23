@@ -35,7 +35,7 @@ To publish new work, cherry-pick only the new `main` commits onto `github-main`,
 ## Facts that are easy to get wrong
 
 - Keybindings are `configs/keybindings.toml`, written to `~/.config/i3/keybindings.conf` by `write_i3_keybindings_file`. Super+Shift+K runs `up-show-keybindings`.
-- i3 does not re-run a plain `exec` line on reload or on `restart` (Super+Ctrl+R). The bar is `exec_always`, and that is the only restart on a theme change. Do not also call `launch.sh` from the theme script or the desktop agent after an i3 reload. `launch.sh` must not leave its lock fd open in the polybar process.
+- i3 does not re-run a plain `exec` line on reload or on `restart` (Super+Ctrl+R). The bar line is `exec_always`. A theme change writes `polybar-launch-defer` before `i3-msg reload`, so that in-reload `launch.sh` does not kill the bar (it runs before i3 answers). The theme script then starts the bar once. Do not drop that second step, and do not let both copies kill the bar. `launch.sh` must not leave its lock fd open in the polybar process.
 - cliamp is AUR-only. Install `cliamp-bin` with yay (`AUR_PACKAGES`), not pacman. `music.desktop` runs `alacritty --class music -e cliamp`.
 - Login curtain order is login sharp, login blur, session blur (crossfade at the blur frame when the images differ), session sharp. Frames live under `~/.local/state/up/session-curtain/{login,blend,session}/`.
 - Flameshot 13+ uses the screenshot portal. i3 on X11 has no portal backend. Capture goes through `configs/scripts/screenshot.sh`, which sets `useX11LegacyScreenshot=true`.

@@ -136,7 +136,9 @@ restart_polybar() {
     wait_for_i3_ipc
     log "running polybar launcher: $launcher"
     # Export DISPLAY explicitly for i3 --no-startup-id edge cases
-    DISPLAY="${DISPLAY:-:0}" "$launcher" >>"$LOG" 2>&1 || log "polybar launcher exit=$?"
+    # FORCE so a theme-reload defer stamp cannot swallow this restart.
+    UP_POLYBAR_QUICK=1 UP_POLYBAR_FORCE=1 \
+        DISPLAY="${DISPLAY:-:0}" "$launcher" >>"$LOG" 2>&1 || log "polybar launcher exit=$?"
     if pgrep -u "${UID:-$(id -u)}" -x polybar >/dev/null 2>&1; then
         log "polybar is running"
     else
@@ -472,16 +474,18 @@ coalesce_and_run() {
 
     # --- Idempotent desktop refresh (once each) ---
     if [ "$want_i3" -eq 1 ]; then
+        # While this stamp is fresh, exec_always's launch.sh exits without
+        # killing the bar. The restart below is the one that re-reads colors.
+        if [ "$want_polybar" -eq 1 ]; then
+            printf '%s\n' "$(($(date +%s) + 4))" \
+                >"${XDG_RUNTIME_DIR:-/tmp}/polybar-launch-defer-${UID:-$(id -u)}"
+        fi
         log "exec idempotent reload i3"
         reload_i3
     fi
-    # i3 reload runs exec_always launch.sh. Restarting the bar again here
-    # is a second flicker with the same config.
-    if [ "$want_polybar" -eq 1 ] && [ "$want_i3" -eq 0 ]; then
+    if [ "$want_polybar" -eq 1 ]; then
         log "exec idempotent restart polybar"
         restart_polybar
-    elif [ "$want_polybar" -eq 1 ]; then
-        log "skip polybar restart (i3 reload runs launch.sh)"
     fi
     if [ "$want_picom" -eq 1 ]; then
         local after_cap after_theme
