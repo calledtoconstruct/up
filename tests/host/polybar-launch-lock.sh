@@ -64,6 +64,19 @@ else
     bad "i3 config does not exec_always polybar/launch.sh"
 fi
 
+# Theme apply reloads i3, and that exec_always is the one bar restart.
+theme_live=$(awk '
+    /elif is_graphical_session; then/ { grab=1 }
+    grab { print }
+    /Theme files written \(no graphical session\)/ { grab=0 }
+' "$ROOT/configs/scripts/switch-theme.sh")
+if printf '%s\n' "$theme_live" | grep -q 'reload_i3_if_running' \
+    && ! printf '%s\n' "$theme_live" | grep -q 'restart_polybar_once'; then
+    ok "theme reload does not start polybar a second time"
+else
+    bad "theme path still restarts polybar on top of i3 reload"
+fi
+
 launch() {
     env -u DISPLAY UP_POLYBAR_QUICK=1 \
         HOME="$HOME" XDG_RUNTIME_DIR="$XDG_RUNTIME_DIR" \

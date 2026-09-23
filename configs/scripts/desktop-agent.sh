@@ -475,9 +475,13 @@ coalesce_and_run() {
         log "exec idempotent reload i3"
         reload_i3
     fi
-    if [ "$want_polybar" -eq 1 ]; then
+    # i3 reload runs exec_always launch.sh. Restarting the bar again here
+    # is a second flicker with the same config.
+    if [ "$want_polybar" -eq 1 ] && [ "$want_i3" -eq 0 ]; then
         log "exec idempotent restart polybar"
         restart_polybar
+    elif [ "$want_polybar" -eq 1 ]; then
+        log "skip polybar restart (i3 reload runs launch.sh)"
     fi
     if [ "$want_picom" -eq 1 ]; then
         local after_cap after_theme

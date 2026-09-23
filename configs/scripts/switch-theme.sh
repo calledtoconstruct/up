@@ -1682,6 +1682,21 @@ update_config_theme() {
 if [ ! -f "$STATE_FILE" ] || [ "$(tr -d '[:space:]' < "$STATE_FILE" 2>/dev/null)" != "$selected" ]; then
     echo "$selected" > "$STATE_FILE"
 fi
+# Live session: hold the config watcher off before the theme line is written.
+# Otherwise it enqueues a sync, and the agent reloads i3 and restarts the bar
+# again after this script already did.
+_theme_hold_watch=0
+if [ "$NO_RELOAD" != true ] && [ -z "${HOME_OVERRIDE:-}" ] \
+    && [ -z "${UP_INSTALL:-}" ] && [ -z "${UP_DESKTOP_INLINE:-}" ] \
+    && [ ! -f /run/up-installing ] && [ ! -f /etc/up-installing ] \
+    && [ -n "${DISPLAY:-}" ] \
+    && [ -f "$SCRIPT_DIR/desktop-request.sh" ]; then
+    # shellcheck source=desktop-request.sh
+    source "$SCRIPT_DIR/desktop-request.sh"
+    desktop_watch_suppress_begin
+    _theme_hold_watch=1
+fi
+
 update_config_theme "$selected"
 
 # Desktop process refresh (install vs live session):
@@ -1724,12 +1739,14 @@ elif [ -n "${HOME_OVERRIDE:-}" ] || [ -n "${UP_INSTALL:-}" ] \
     || { [ -z "${DISPLAY:-}" ] && [ -z "${WAYLAND_DISPLAY:-}" ]; }; then
     echo "→ Theme files written (offline/install path; no live desktop reload)"
 elif is_graphical_session; then
-    # Do not wait on desktop-agent. A queued refresh + wait was hanging
-    # ~60s with no bar restart. i3 reload then kill+exec polybar here.
+    # i3 reload runs exec_always polybar/launch.sh, which is the one bar
+    # restart. A second launch.sh here kills that bar and starts another.
     reload_i3_if_running || true
     wait_for_i3_ipc || true
-    restart_polybar_once || true
-    echo "→ Reloaded i3 and restarted polybar"
+    if [ "${_theme_hold_watch:-0}" = 1 ]; then
+        desktop_watch_suppress_end || true
+    fi
+    echo "→ Reloaded i3 (polybar re-execs from exec_always)"
 else
     echo "→ Theme files written (no graphical session)"
 fi

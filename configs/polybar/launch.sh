@@ -136,8 +136,8 @@ stop_polybar() {
     return 0
 }
 
-stop_polybar
-
+# Leave the current bar up until i3 answers. Killing first, then waiting,
+# is a visible gap, and a second launcher can start another gap on top.
 if [ "${UP_POLYBAR_QUICK:-0}" != 1 ] \
     && command -v i3-msg >/dev/null 2>&1 && [ -n "${DISPLAY:-}" ]; then
     _i=0
@@ -184,6 +184,8 @@ if [ ! -r "$CONFIG" ]; then
     log_msg "ERROR: config not readable: $CONFIG"
     exit 1
 fi
+
+stop_polybar
 
 # Do not let polybar inherit fd 9. Otherwise the flock stays held for the
 # life of the bar and the next theme launch cannot re-exec it.
