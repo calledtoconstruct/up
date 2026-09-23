@@ -281,6 +281,17 @@ up-switch-theme
 Super + Ctrl + R   # restart i3
 ```
 
+### Bluetooth: "Bluez daemon is not running", or the controls window flashes closed
+
+**Cause:** `bluez` and `blueman` are installed, but `bluetooth.service` is not enabled. Arch does not start `bluetoothd` on its own. Blueman shows the daemon error. The menu entry runs `bluetoothctl`, which exits at once, so the terminal closes.
+
+**Fix:** Update Up (migration `003-enable-bluetooth` enables and starts the service). By hand:
+
+```bash
+sudo systemctl enable --now bluetooth.service
+systemctl status bluetooth.service
+```
+
 ### Audio / network
 
 ```bash

@@ -553,6 +553,7 @@ sed -i 's/Loading Linux/Loading Up/g' /boot/grub/grub.cfg
 
 systemctl daemon-reload
 enable_service_safe dbus
+enable_service_safe bluetooth
 enable_service_safe NetworkManager
 
 [ -f /root/up/.swap-config ] && source /root/up/.swap-config
